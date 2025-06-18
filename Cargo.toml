@@ -9,3 +9,11 @@ resolver = "2"
 
 # Added by script:
 sqlx = { version = "0.7", features = ["postgres"], default-features = false }
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+tokio-postgres = "0.7"
+dotenv = "0.15"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
