@@ -6,3 +6,15 @@ channel = "stable-24_05"
 
 [deployment]
 run = ["sh", "-c", "node index.js"]
+
+[workflows]
+runButton = "Run Blockchain Node"
+
+[[workflows.workflow]]
+name = "Run Blockchain Node"
+author = 43857852
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd blockchain-node && cargo run --release"
