@@ -85,3 +85,159 @@ pub async fn get_last_block(pool: &PgPool) -> sqlx::Result<Option<Block>> {
         .fetch_optional(pool)
         .await
 }
+use sqlx::{PgPool, Row};
+use uuid::Uuid;
+use crate::models::*;
+use crate::error::BlockchainError;
+
+pub struct Database {
+    pool: PgPool,
+}
+
+impl Database {
+    pub fn new(pool: PgPool) -> Self {
+        Self { pool }
+    }
+    
+    // User operations
+    pub async fn create_user(&self, user: &User) -> Result<(), BlockchainError> {
+        sqlx::query!(
+            "INSERT INTO users (id, username, email, password_hash, wallet_address, created_at, updated_at) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7)",
+            user.id,
+            user.username,
+            user.email,
+            user.password_hash,
+            user.wallet_address,
+            user.created_at,
+            user.updated_at
+        )
+        .execute(&self.pool)
+        .await?;
+        
+        Ok(())
+    }
+    
+    pub async fn get_user_by_username(&self, username: &str) -> Result<Option<User>, BlockchainError> {
+        let user = sqlx::query_as!(
+            User,
+            "SELECT * FROM users WHERE username = $1",
+            username
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+        
+        Ok(user)
+    }
+    
+    // Block operations
+    pub async fn create_block(&self, block: &Block) -> Result<(), BlockchainError> {
+        sqlx::query!(
+            "INSERT INTO blocks (id, index, hash, previous_hash, timestamp, nonce, merkle_root, difficulty, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+            block.id,
+            block.index,
+            block.hash,
+            block.previous_hash,
+            block.timestamp,
+            block.nonce,
+            block.merkle_root,
+            block.difficulty,
+            block.created_at
+        )
+        .execute(&self.pool)
+        .await?;
+        
+        Ok(())
+    }
+    
+    pub async fn get_latest_block(&self) -> Result<Option<Block>, BlockchainError> {
+        let block = sqlx::query_as!(
+            Block,
+            "SELECT * FROM blocks ORDER BY index DESC LIMIT 1"
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+        
+        Ok(block)
+    }
+    
+    pub async fn get_block_by_hash(&self, hash: &str) -> Result<Option<Block>, BlockchainError> {
+        let block = sqlx::query_as!(
+            Block,
+            "SELECT * FROM blocks WHERE hash = $1",
+            hash
+        )
+        .fetch_optional(&self.pool)
+        .await?;
+        
+        Ok(block)
+    }
+    
+    // Transaction operations
+    pub async fn create_transaction(&self, tx: &Transaction) -> Result<(), BlockchainError> {
+        sqlx::query!(
+            "INSERT INTO transactions (id, hash, from_address, to_address, amount, fee, signature, timestamp, block_id, status, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+            tx.id,
+            tx.hash,
+            tx.from_address,
+            tx.to_address,
+            tx.amount,
+            tx.fee,
+            tx.signature,
+            tx.timestamp,
+            tx.block_id,
+            tx.status as TransactionStatus,
+            tx.created_at
+        )
+        .execute(&self.pool)
+        .await?;
+        
+        Ok(())
+    }
+    
+    pub async fn get_pending_transactions(&self) -> Result<Vec<Transaction>, BlockchainError> {
+        let transactions = sqlx::query_as!(
+            Transaction,
+            "SELECT * FROM transactions WHERE status = 'pending' ORDER BY created_at ASC"
+        )
+        .fetch_all(&self.pool)
+        .await?;
+        
+        Ok(transactions)
+    }
+    
+    pub async fn get_balance(&self, address: &str) -> Result<i64, BlockchainError> {
+        let result = sqlx::query!(
+            "SELECT 
+                COALESCE(SUM(CASE WHEN to_address = $1 THEN amount ELSE 0 END), 0) -
+                COALESCE(SUM(CASE WHEN from_address = $1 THEN amount + fee ELSE 0 END), 0) as balance
+             FROM transactions 
+             WHERE (from_address = $1 OR to_address = $1) AND status = 'confirmed'",
+            address
+        )
+        .fetch_one(&self.pool)
+        .await?;
+        
+        Ok(result.balance.unwrap_or(0))
+    }
+    
+    pub async fn update_transaction_status(
+        &self, 
+        tx_id: Uuid, 
+        status: TransactionStatus,
+        block_id: Option<Uuid>
+    ) -> Result<(), BlockchainError> {
+        sqlx::query!(
+            "UPDATE transactions SET status = $1, block_id = $2 WHERE id = $3",
+            status as TransactionStatus,
+            block_id,
+            tx_id
+        )
+        .execute(&self.pool)
+        .await?;
+        
+        Ok(())
+    }
+}
