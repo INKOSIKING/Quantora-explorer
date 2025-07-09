@@ -177,7 +177,7 @@ impl HybridConsensusEngine {
             self.validators.len(),
             self.bft_threshold,
             self.stakes.values().sum::<u64>(),
-            self.rollup_batches
+            self.batch_size
         )
     }
 

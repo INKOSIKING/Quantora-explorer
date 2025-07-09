@@ -6,6 +6,7 @@ use secp256k1::{SecretKey, PublicKey, Secp256k1};
 use hex;
 use std::collections::HashMap;
 use rand::RngCore;
+use serde_json;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BlockHeader {
@@ -366,5 +367,12 @@ impl Blockchain {
             }
         }
         true
+    }
+}
+
+impl Transaction {
+    pub fn hash(&self) -> String {
+        let serialized = serde_json::to_string(self).unwrap();
+        hex::encode(Sha256::digest(serialized.as_bytes()))
     }
 }
