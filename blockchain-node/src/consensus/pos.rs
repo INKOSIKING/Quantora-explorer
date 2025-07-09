@@ -2,8 +2,8 @@ use super::ConsensusEngine;
 use crate::blockchain::{Block, BlockHeader};
 use crate::mempool::Mempool;
 use std::collections::HashMap;
-use chrono::Utc;
 use std::time::{SystemTime, UNIX_EPOCH};
+use sha2::Digest;
 
 pub struct PoSEngine {
     pub stakes: HashMap<String, u64>,
@@ -36,7 +36,7 @@ impl ConsensusEngine for PoSEngine {
             index: 0, // This should be determined by the blockchain
             timestamp,
             previous_hash: parent_hash.to_string(),
-            merkle_root: Self::calculate_merkle_root(&transactions),
+            merkle_root: calculate_merkle_root(&transactions),
             validator: miner_address.to_string(),
             dag_edges: vec![],
             bft_round: 0,
@@ -54,28 +54,29 @@ impl ConsensusEngine for PoSEngine {
         }
     }
 
-    fn calculate_merkle_root(transactions: &[crate::blockchain::Transaction]) -> String {
-        if transactions.is_empty() {
-            return String::from("0");
-        }
-
-        let mut hashes: Vec<String> = transactions.iter().map(|tx| {
-            let serialized = serde_json::to_string(tx).unwrap();
-            hex::encode(sha2::Sha256::digest(serialized.as_bytes()))
-        }).collect();
-
-        while hashes.len() > 1 {
-            let mut new_hashes = vec![];
-            for i in (0..hashes.len()).step_by(2) {
-                let left = &hashes[i];
-                let right = if i + 1 < hashes.len() { &hashes[i + 1] } else { left };
-                let combined = format!("{}{}", left, right);
-                let hash = hex::encode(sha2::Sha256::digest(combined.as_bytes()));
-                new_hashes.push(hash);
-            }
-            hashes = new_hashes;
-        }
-
-        hashes[0].clone()
     }
+
+fn calculate_merkle_root(transactions: &[crate::blockchain::Transaction]) -> String {
+    if transactions.is_empty() {
+        return String::from("0");
+    }
+
+    let mut hashes: Vec<String> = transactions.iter().map(|tx| {
+        let serialized = serde_json::to_string(tx).unwrap();
+        hex::encode(sha2::Sha256::digest(serialized.as_bytes()))
+    }).collect();
+
+    while hashes.len() > 1 {
+        let mut new_hashes = vec![];
+        for i in (0..hashes.len()).step_by(2) {
+            let left = &hashes[i];
+            let right = if i + 1 < hashes.len() { &hashes[i + 1] } else { left };
+            let combined = format!("{}{}", left, right);
+            let hash = hex::encode(sha2::Sha256::digest(combined.as_bytes()));
+            new_hashes.push(hash);
+        }
+        hashes = new_hashes;
+    }
+
+    hashes[0].clone()
 }

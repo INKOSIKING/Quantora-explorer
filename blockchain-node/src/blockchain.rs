@@ -119,7 +119,7 @@ impl Blockchain {
         let seed = mnemonic.to_seed("");
 
         let secp = Secp256k1::new();
-        let secret_key = SecretKey::from_slice(&seed.as_bytes()[0..32]).unwrap();
+        let secret_key = SecretKey::from_slice(&seed[0..32]).unwrap();
         let public_key = PublicKey::from_secret_key(&secp, &secret_key);
 
         let address = Self::public_key_to_address(&public_key);
@@ -147,7 +147,7 @@ impl Blockchain {
         let seed = mnemonic.to_seed("");
 
         let secp = Secp256k1::new();
-        let secret_key = SecretKey::from_slice(&seed.as_bytes()[0..32]).unwrap();
+        let secret_key = SecretKey::from_slice(&seed[0..32]).unwrap();
         let public_key = PublicKey::from_secret_key(&secp, &secret_key);
 
         let address = Self::public_key_to_address(&public_key);
