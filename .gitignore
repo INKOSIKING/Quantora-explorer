@@ -98,4 +98,5 @@ quantora.log
 
 # --- CI/CD Artifacts ---
 /artifacts/
-/ci-logs/
+/ci-logs/.env.production
+charts/exchange-backend/values-production.yaml
