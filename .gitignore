@@ -100,3 +100,5 @@ quantora.log
 /artifacts/
 /ci-logs/.env.production
 charts/exchange-backend/values-production.yaml
+.env.production
+charts/exchange-backend/values-production.yaml
