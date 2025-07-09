@@ -2,9 +2,8 @@ use bip39::{Mnemonic, Language};
 use secp256k1::{PublicKey, SecretKey};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::str::FromStr;
-use rand::rngs::OsRng;
-use rand::RngCore;
+use secp256k1::rand::rngs::OsRng;
+use secp256k1::rand::RngCore;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Wallet {
@@ -28,7 +27,7 @@ impl Wallet {
         // Generate keys from mnemonic
         let seed = mnemonic.to_seed("");
 
-        let secp = Secp256k1::new();
+        let secp = secp256k1::Secp256k1::new();
         let secret_key = SecretKey::from_slice(&seed[0..32]).unwrap();
         let public_key = PublicKey::from_secret_key(&secp, &secret_key);
 

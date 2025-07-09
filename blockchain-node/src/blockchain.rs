@@ -5,10 +5,8 @@ use chrono::{DateTime, Utc};
 use bip39::{Mnemonic, Language};
 use secp256k1::{SecretKey, PublicKey, Secp256k1};
 use hex;
-use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
-use chrono::Utc;
-use sha2::{Digest, Sha256};
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BlockHeader {
@@ -16,19 +14,21 @@ pub struct BlockHeader {
     pub timestamp: u64,
     pub previous_hash: String,
     pub merkle_root: String,
-    pub nonce: u64,
+    pub validator: String,
+    pub dag_edges: Vec<String>,
+    pub bft_round: u64,
+    pub zk_proof: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Block {
     pub header: BlockHeader,
-    pub index: u64,
-    pub timestamp: u64,
-    pub previous_hash: String,
     pub hash: String,
     pub transactions: Vec<Transaction>,
-    pub nonce: u64,
-    pub miner_reward: u64,
+    pub validator_reward: u64,
+    pub dag_weight: u64,
+    pub bft_signatures: Vec<String>,
+    pub rollup_batch_size: u64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -69,22 +69,26 @@ pub struct Blockchain {
 }
 
 impl Block {
-    pub fn genesis() -> Self {
-        Block {
-            header: BlockHeader {
-                index: 0,
-                timestamp: 0,
-                previous_hash: "0".to_string(),
-                merkle_root: "genesis_merkle_root".to_string(),
-                nonce: 0,
-            },
+    pub fn genesis() -> Block {
+        let header = BlockHeader {
             index: 0,
-            timestamp: chrono::Utc::now().timestamp() as u64,
+            timestamp: 0,
             previous_hash: "0".to_string(),
-            hash: "genesis_hash".to_string(),
+            merkle_root: "0".to_string(),
+            validator: "genesis".to_string(),
+            dag_edges: vec![],
+            bft_round: 0,
+            zk_proof: None,
+        };
+
+        Block {
+            header,
+            hash: "genesis_block_hash_quantora_hybrid_consensus".to_string(),
             transactions: vec![],
-            nonce: 0,
-            miner_reward: 0,
+            validator_reward: 0,
+            dag_weight: 0,
+            bft_signatures: vec!["genesis".to_string()],
+            rollup_batch_size: 10000,
         }
     }
 }
@@ -170,15 +174,17 @@ impl Blockchain {
                 timestamp: Utc::now().timestamp() as u64,
                 previous_hash: "0".to_string(),
                 merkle_root: "genesis_merkle_root".to_string(),
-                nonce: 0,
+                validator: "genesis".to_string(),
+                dag_edges: vec![],
+                bft_round: 0,
+                zk_proof: None,
             },
-            index: 0,
-            timestamp: Utc::now().timestamp() as u64,
-            previous_hash: "0".to_string(),
             hash: "genesis_hash".to_string(),
             transactions: vec![genesis_transaction.clone()],
-            nonce: 0,
-            miner_reward: 0,
+            validator_reward: 0,
+            dag_weight: 0,
+            bft_signatures: vec!["genesis".to_string()],
+            rollup_batch_size: 10000,
         };
 
         // Set founder's balance
@@ -264,23 +270,22 @@ impl Blockchain {
         let previous_block = self.chain.last().unwrap();
         let mut new_block = Block {
             header: BlockHeader {
-                index: previous_block.index + 1,
+                index: previous_block.header.index + 1,
                 timestamp: Utc::now().timestamp() as u64,
                 previous_hash: previous_block.hash.clone(),
                 merkle_root: "temp_merkle_root".to_string(), // TODO: Implement merkle root calculation
-                nonce: 0,
+                validator: "miner_address".to_string(), // Assuming miner_address is the validator
+                dag_edges: vec![], // TODO: Implement DAG edges
+                bft_round: 0,       // TODO: Implement BFT round
+                zk_proof: None,      // TODO: Implement ZK-proof
             },
-            index: previous_block.index + 1,
-            timestamp: Utc::now().timestamp() as u64,
-            previous_hash: previous_block.hash.clone(),
-            hash: String::new(),
+            hash: String::new(), // TODO: Implement block hashing
             transactions: self.pending_transactions.clone(),
-            nonce: 0,
-            miner_reward: actual_reward,
+            validator_reward: actual_reward,
+            dag_weight: 0, // TODO: Implement DAG weight
+            bft_signatures: vec![], // TODO: Implement BFT signatures
+            rollup_batch_size: 10000,
         };
-
-        // Proof of work
-        new_block.hash = self.proof_of_work(&mut new_block);
 
         // Update balances
         self.update_balances(&new_block.transactions);
@@ -291,34 +296,22 @@ impl Blockchain {
         // Clear pending transactions
         self.pending_transactions.clear();
 
-        println!("⛏️  Block #{} mined! Reward: {} QuanX", new_block.index, self.format_amount(actual_reward));
+        println!("⛏️  Block #{} mined! Reward: {} QuanX", new_block.header.index, self.format_amount(actual_reward));
         println!("🪙 Mining Pool Remaining: {} QuanX", self.format_amount(self.mining_pool));
 
         new_block
-    }
-
-    fn proof_of_work(&self, block: &mut Block) -> String {
-        let target = "0".repeat(self.difficulty);
-
-        loop {
-            let hash = self.calculate_hash(block);
-            if hash.starts_with(&target) {
-                return hash;
-            }
-            block.nonce += 1;
-        }
     }
 
     fn calculate_hash(&self, block: &Block) -> String {
         let mut hasher = Sha256::new();
         let block_string = format!(
             "{}{}{}{}{}{}",
-            block.index,
-            block.timestamp,
-            block.previous_hash,
+            block.header.index,
+            block.header.timestamp,
+            block.header.previous_hash,
             serde_json::to_string(&block.transactions).unwrap_or_default(),
-            block.nonce,
-            block.miner_reward
+            block.header.validator,
+            block.validator_reward
         );
         hasher.update(block_string.as_bytes());
         format!("{:x}", hasher.finalize())
@@ -365,7 +358,7 @@ impl Blockchain {
                 return false;
             }
 
-            if current_block.previous_hash != previous_block.hash {
+            if current_block.header.previous_hash != previous_block.hash {
                 return false;
             }
         }

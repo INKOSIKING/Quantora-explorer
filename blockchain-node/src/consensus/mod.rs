@@ -1,18 +1,19 @@
-pub mod pow;
 pub mod pos;
+pub mod hybrid;
 
 use crate::blockchain::{Block, BlockHeader};
 use crate::mempool::Mempool;
 
 pub enum ConsensusType {
-    PoW,
     PoS,
+    Hybrid, // PoS + DPoS + DAG + BFT + ZK-Rollups
 }
 
 pub struct ConsensusConfig {
     pub consensus_type: ConsensusType,
-    pub difficulty: u64, // For PoW
-    // Add other config as needed
+    pub validator_count: u64,
+    pub batch_size: u64, // For ZK-Rollups
+    pub bft_threshold: u64, // Byzantine fault tolerance
 }
 
 pub trait ConsensusEngine {

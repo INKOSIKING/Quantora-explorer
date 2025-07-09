@@ -20,7 +20,7 @@ impl PoSEngine {
 impl ConsensusEngine for PoSEngine {
     fn validate_block(&self, block: &Block) -> bool {
         match self.select_validator() {
-            Some(selected) => block.header.miner == selected,
+            Some(selected) => block.header.validator == selected,
             None => false,
         }
     }
@@ -35,14 +35,21 @@ impl ConsensusEngine for PoSEngine {
         let header = BlockHeader {
             index: 0, // This should be determined by the blockchain
             timestamp,
-            parent_hash: parent_hash.to_string(),
-            miner: miner_address.to_string(),
-            nonce: 0,
+            previous_hash: parent_hash.to_string(),
+            validator: miner_address.to_string(),
+            dag_edges: vec![],
+            bft_round: 0,
+            zk_proof: None,
         };
 
         Block {
             header,
+            hash: String::new(),
             transactions,
+            validator_reward: 1000,
+            dag_weight: 1,
+            bft_signatures: vec![miner_address.to_string()],
+            rollup_batch_size: 1000,
         }
     }
 }
