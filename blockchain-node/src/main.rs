@@ -1,141 +1,187 @@
 
-use tokio;
-use log::{info, error};
 use std::sync::Arc;
-use tokio::sync::Mutex;
+use tokio::sync::RwLock;
+use warp::Filter;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 mod blockchain;
 mod network;
 mod consensus;
-mod wallet_api;
-mod web_server;
+mod transaction;
+mod wallet;
 
 use blockchain::Blockchain;
 use network::NetworkManager;
 use consensus::ConsensusEngine;
+use transaction::Transaction;
+use wallet::Wallet;
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct BlockchainState {
+    pub chain: Vec<blockchain::Block>,
+    pub pending_transactions: Vec<Transaction>,
+    pub balances: HashMap<String, u64>,
+    pub validators: Vec<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ApiResponse<T> {
+    pub success: bool,
+    pub data: Option<T>,
+    pub error: Option<String>,
+}
+
+type SharedState = Arc<RwLock<BlockchainState>>;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() {
+    // Initialize logging
     env_logger::init();
     
-    info!("Starting Quantora blockchain node...");
+    // Create founder wallet
+    let founder_wallet = Wallet::new("founder".to_string());
+    println!("🔐 Founder Wallet Address: {}", founder_wallet.address);
+    println!("💰 Founder Private Key: {}", founder_wallet.private_key);
     
-    // Initialize blockchain
-    let blockchain = Arc::new(Mutex::new(Blockchain::new()));
+    // Initialize blockchain state
+    let mut initial_balances = HashMap::new();
+    initial_balances.insert(founder_wallet.address.clone(), 1_000_000_000); // 1B tokens
+    
+    let blockchain_state = BlockchainState {
+        chain: vec![blockchain::Block::genesis()],
+        pending_transactions: vec![],
+        balances: initial_balances,
+        validators: vec![founder_wallet.address.clone()],
+    };
+    
+    let shared_state: SharedState = Arc::new(RwLock::new(blockchain_state));
     
     // Initialize network manager
-    let network = Arc::new(NetworkManager::new());
+    let network_manager = NetworkManager::new(8080);
+    tokio::spawn(network_manager.start());
     
     // Initialize consensus engine
-    let consensus = Arc::new(ConsensusEngine::new());
-    
-    // Start network listener
-    let network_handle = {
-        let network = network.clone();
-        tokio::spawn(async move {
-            if let Err(e) = network.start_listener("0.0.0.0:8080").await {
-                error!("Network error: {}", e);
-            }
-        })
-    };
-    
-    // Start consensus engine
-    let consensus_handle = {
-        let consensus = consensus.clone();
-        let blockchain = blockchain.clone();
-        tokio::spawn(async move {
-            consensus.start(blockchain).await;
-        })
-    };
-    
-    // Start web server
-    let web_handle = {
-        let blockchain = blockchain.clone();
-        tokio::spawn(async move {
-            let web_server = web_server::WebServer::new(blockchain);
-            web_server.start().await;
-        })
-    };
-    
-    info!("🚀 QuanX Blockchain Node Started Successfully!");
-    info!("🌐 Network listening on 0.0.0.0:8080");
-    
-    // Display founder wallet information
-    {
-        let blockchain_lock = blockchain.lock().await;
-        let founder_info = blockchain_lock.get_founder_info();
-        let stats = blockchain_lock.get_blockchain_stats();
-        
-        info!("💰 QuanX Token Information:");
-        info!("   Total Supply: {} QuanX", stats.get("total_supply").unwrap());
-        info!("   🔥 Burned (Untouchable): {} QuanX", stats.get("burned_supply").unwrap());
-        info!("   ⛏️  Mining Pool: {} QuanX", stats.get("mining_pool").unwrap());
-        info!("   👤 Founder Allocation: {} QuanX", stats.get("founder_allocation").unwrap());
-        info!("");
-        info!("🔑 FOUNDER WALLET CREDENTIALS:");
-        info!("   Address: {}", founder_info.address);
-        info!("   Seed Phrase: {}", founder_info.seed_phrase);
-        info!("   Balance: {} QuanX", blockchain_lock.get_balance(&founder_info.address));
-        info!("");
-        info!("⚠️  IMPORTANT: Save your seed phrase securely!");
-        info!("   This wallet contains 6 trillion QuanX tokens.");
-    }
-    
-    // Wait for all services
-    tokio::try_join!(network_handle, consensus_handle, web_handle)?;
-    
-    Ok(())
-}
-use log::{info, error};
-use std::env;
-use tokio::time::{sleep, Duration};
-
-mod blockchain;
-mod network;
-mod consensus;
-mod storage;
-mod health;
-
-use blockchain::Blockchain;
-use network::NetworkManager;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    env_logger::init();
-    
-    info!("🚀 Starting Quantora Blockchain Node...");
-    
-    // Initialize blockchain
-    let mut blockchain = Blockchain::new();
-    
-    // Create genesis block if needed
-    if blockchain.get_chain().is_empty() {
-        info!("📦 Creating genesis block...");
-        blockchain.create_genesis_block()?;
-        info!("✅ Genesis block created");
-    }
-    
-    // Start network manager
-    let network = NetworkManager::new("0.0.0.0:8545".to_string());
-    
-    info!("🌐 Starting network on 0.0.0.0:8545");
+    let consensus_engine = ConsensusEngine::new();
+    let consensus_state = Arc::clone(&shared_state);
     tokio::spawn(async move {
-        if let Err(e) = network.start().await {
-            error!("Network error: {}", e);
-        }
+        consensus_engine.run(consensus_state).await;
     });
     
-    // Start health check endpoint
-    let health_server = health::start_health_server();
-    tokio::spawn(health_server);
+    // API Routes
+    let get_balance = warp::path!("balance" / String)
+        .and(warp::get())
+        .and(with_state(Arc::clone(&shared_state)))
+        .and_then(get_balance_handler);
     
-    info!("✅ Quantora Blockchain Node is running!");
-    info!("📊 Health check: http://0.0.0.0:3030/health");
-    info!("🔗 RPC endpoint: http://0.0.0.0:8545");
+    let get_chain = warp::path("chain")
+        .and(warp::get())
+        .and(with_state(Arc::clone(&shared_state)))
+        .and_then(get_chain_handler);
     
-    // Keep the main thread alive
-    loop {
-        sleep(Duration::from_secs(30)).await;
-        info!("💓 Node heartbeat - {} blocks", blockchain.get_chain().len());
+    let submit_transaction = warp::path("transaction")
+        .and(warp::post())
+        .and(warp::body::json())
+        .and(with_state(Arc::clone(&shared_state)))
+        .and_then(submit_transaction_handler);
+    
+    let get_status = warp::path("status")
+        .and(warp::get())
+        .and(with_state(Arc::clone(&shared_state)))
+        .and_then(get_status_handler);
+    
+    let cors = warp::cors()
+        .allow_any_origin()
+        .allow_headers(vec!["content-type"])
+        .allow_methods(vec!["GET", "POST", "OPTIONS"]);
+    
+    let routes = get_balance
+        .or(get_chain)
+        .or(submit_transaction)
+        .or(get_status)
+        .with(cors);
+    
+    println!("🚀 QuanX Blockchain Node Started Successfully!");
+    println!("🌐 API Server: http://0.0.0.0:8080");
+    println!("📊 Status: http://0.0.0.0:8080/status");
+    println!("⛓️  Chain: http://0.0.0.0:8080/chain");
+    
+    warp::serve(routes)
+        .run(([0, 0, 0, 0], 8080))
+        .await;
+}
+
+fn with_state(state: SharedState) -> impl Filter<Extract = (SharedState,), Error = std::convert::Infallible> + Clone {
+    warp::any().map(move || Arc::clone(&state))
+}
+
+async fn get_balance_handler(address: String, state: SharedState) -> Result<impl warp::Reply, warp::Rejection> {
+    let blockchain_state = state.read().await;
+    let balance = blockchain_state.balances.get(&address).unwrap_or(&0);
+    
+    let response = ApiResponse {
+        success: true,
+        data: Some(*balance),
+        error: None,
+    };
+    
+    Ok(warp::reply::json(&response))
+}
+
+async fn get_chain_handler(state: SharedState) -> Result<impl warp::Reply, warp::Rejection> {
+    let blockchain_state = state.read().await;
+    
+    let response = ApiResponse {
+        success: true,
+        data: Some(&blockchain_state.chain),
+        error: None,
+    };
+    
+    Ok(warp::reply::json(&response))
+}
+
+async fn submit_transaction_handler(transaction: Transaction, state: SharedState) -> Result<impl warp::Reply, warp::Rejection> {
+    let mut blockchain_state = state.write().await;
+    
+    // Validate transaction
+    let sender_balance = blockchain_state.balances.get(&transaction.from).unwrap_or(&0);
+    if *sender_balance < transaction.amount {
+        let response = ApiResponse {
+            success: false,
+            data: None::<String>,
+            error: Some("Insufficient balance".to_string()),
+        };
+        return Ok(warp::reply::json(&response));
     }
+    
+    // Add to pending transactions
+    blockchain_state.pending_transactions.push(transaction.clone());
+    
+    let response = ApiResponse {
+        success: true,
+        data: Some("Transaction submitted successfully".to_string()),
+        error: None,
+    };
+    
+    Ok(warp::reply::json(&response))
+}
+
+async fn get_status_handler(state: SharedState) -> Result<impl warp::Reply, warp::Rejection> {
+    let blockchain_state = state.read().await;
+    
+    let status = serde_json::json!({
+        "chain_length": blockchain_state.chain.len(),
+        "pending_transactions": blockchain_state.pending_transactions.len(),
+        "total_accounts": blockchain_state.balances.len(),
+        "validators": blockchain_state.validators.len(),
+        "network_status": "active"
+    });
+    
+    let response = ApiResponse {
+        success: true,
+        data: Some(status),
+        error: None,
+    };
+    
+    Ok(warp::reply::json(&response))
 }
