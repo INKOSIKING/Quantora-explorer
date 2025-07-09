@@ -1,12 +1,11 @@
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::time::{SystemTime, UNIX_EPOCH};
 use chrono::{DateTime, Utc};
 use bip39::{Mnemonic, Language};
 use secp256k1::{SecretKey, PublicKey, Secp256k1};
 use hex;
-use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
+use rand::RngCore;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BlockHeader {
@@ -113,7 +112,9 @@ impl Blockchain {
 
     fn create_founder_wallet() -> Wallet {
         // Generate the founder's seed phrase
-        let mnemonic = Mnemonic::generate(12).unwrap();
+        let mut entropy = [0u8; 16]; // 128-bit entropy for 12 words
+        rand::thread_rng().fill_bytes(&mut entropy);
+        let mnemonic = Mnemonic::from_entropy_in(Language::English, &entropy).unwrap();
         let seed_phrase = mnemonic.to_string();
         let seed = mnemonic.to_seed("");
 
@@ -139,7 +140,9 @@ impl Blockchain {
     }
 
     pub fn create_wallet() -> Wallet {
-        let mnemonic = Mnemonic::generate(12).unwrap();
+        let mut entropy = [0u8; 16]; // 128-bit entropy for 12 words
+        rand::thread_rng().fill_bytes(&mut entropy);
+        let mnemonic = Mnemonic::from_entropy_in(Language::English, &entropy).unwrap();
         let seed_phrase = mnemonic.to_string();
         let seed = mnemonic.to_seed("");
 
@@ -268,7 +271,7 @@ impl Blockchain {
         }
 
         let previous_block = self.chain.last().unwrap();
-        let mut new_block = Block {
+        let new_block = Block {
             header: BlockHeader {
                 index: previous_block.header.index + 1,
                 timestamp: Utc::now().timestamp() as u64,

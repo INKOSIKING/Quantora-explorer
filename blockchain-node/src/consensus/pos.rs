@@ -36,6 +36,35 @@ impl ConsensusEngine for PoSEngine {
             index: 0, // This should be determined by the blockchain
             timestamp,
             previous_hash: parent_hash.to_string(),
+            merkle_root: Self::calculate_merkle_root(&transactions),
+            validator: miner_address.to_string(),
+            dag_edges: vec![],
+            bft_round: 0,
+            zk_proof: None,
+        };
+
+        Block {
+            header,
+            hash: String::new(), // Will be calculated later
+            transactions,
+            validator_reward: 0,
+            dag_weight: 0,
+            bft_signatures: vec![],
+            rollup_batch_size: 10000,
+        }
+    }
+
+    fn calculate_merkle_root(transactions: &[crate::blockchain::Transaction]) -> String {
+        if transactions.is_empty() {
+            return "empty_merkle_root".to_string();
+        }
+        
+        use sha2::{Digest, Sha256};
+        let mut hasher = Sha256::new();
+        for tx in transactions {
+            hasher.update(format!("{}{}{}", tx.from, tx.to, tx.amount));
+        }
+        format!("{:x}", hasher.finalize())ash.to_string(),
             validator: miner_address.to_string(),
             dag_edges: vec![],
             bft_round: 0,

@@ -18,7 +18,7 @@ impl Wallet {
         Self::new_with_name("default".to_string())
     }
 
-    pub fn new_with_name(name: String) -> Self {
+    pub fn new_with_name(_name: String) -> Self {
         let mut entropy = [0u8; 16];
         OsRng.fill_bytes(&mut entropy);
         let mnemonic = Mnemonic::from_entropy_in(Language::English, &entropy).unwrap();

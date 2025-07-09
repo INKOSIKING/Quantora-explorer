@@ -58,8 +58,8 @@ async fn main() {
     let shared_state: SharedState = Arc::new(RwLock::new(blockchain_state));
 
     // Initialize network manager
-    let network_manager = NetworkManager::new();
-    // network_manager.start(); // Comment out until start() method is implemented
+    let _network_manager = NetworkManager::new();
+    // _network_manager.start(); // Comment out until start() method is implemented
 
     // 🚀 HYBRID CONSENSUS: 1 TRILLION TPS (PoS + DPoS + DAG + BFT + ZK-Rollups)
     let mut consensus_engine = HybridConsensusEngine::new();
