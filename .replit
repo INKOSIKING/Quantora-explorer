@@ -9,7 +9,7 @@ run = ["sh", "-c", "cd blockchain-node && cargo run --release"]
 build = ["sh", "-c", "cd blockchain-node && cargo build --release"]
 
 [workflows]
-runButton = "Full Quantora Stack"
+runButton = "Fixed Blockchain Node"
 
 [[workflows.workflow]]
 name = "Run Blockchain Node"
@@ -24,6 +24,15 @@ args = "cd blockchain-node && cargo run --release"
 name = "Full Quantora Stack"
 author = 43857852
 mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd blockchain-node && cargo run --release"
+
+[[workflows.workflow]]
+name = "Fixed Blockchain Node"
+author = 43857852
+mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"

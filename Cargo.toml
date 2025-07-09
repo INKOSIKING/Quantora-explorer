@@ -1,9 +1,6 @@
+
 [workspace]
 members = [
-    "exchange",
-    "blockchain/core",
-    "blockchain/api",
-    "indexer",
-    "common"
+    "blockchain-node"
 ]
 resolver = "2"

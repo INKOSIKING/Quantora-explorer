@@ -86,3 +86,56 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     Ok(())
 }
+use log::{info, error};
+use std::env;
+use tokio::time::{sleep, Duration};
+
+mod blockchain;
+mod network;
+mod consensus;
+mod storage;
+mod health;
+
+use blockchain::Blockchain;
+use network::NetworkManager;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    env_logger::init();
+    
+    info!("🚀 Starting Quantora Blockchain Node...");
+    
+    // Initialize blockchain
+    let mut blockchain = Blockchain::new();
+    
+    // Create genesis block if needed
+    if blockchain.get_chain().is_empty() {
+        info!("📦 Creating genesis block...");
+        blockchain.create_genesis_block()?;
+        info!("✅ Genesis block created");
+    }
+    
+    // Start network manager
+    let network = NetworkManager::new("0.0.0.0:8545".to_string());
+    
+    info!("🌐 Starting network on 0.0.0.0:8545");
+    tokio::spawn(async move {
+        if let Err(e) = network.start().await {
+            error!("Network error: {}", e);
+        }
+    });
+    
+    // Start health check endpoint
+    let health_server = health::start_health_server();
+    tokio::spawn(health_server);
+    
+    info!("✅ Quantora Blockchain Node is running!");
+    info!("📊 Health check: http://0.0.0.0:3030/health");
+    info!("🔗 RPC endpoint: http://0.0.0.0:8545");
+    
+    // Keep the main thread alive
+    loop {
+        sleep(Duration::from_secs(30)).await;
+        info!("💓 Node heartbeat - {} blocks", blockchain.get_chain().len());
+    }
+}
