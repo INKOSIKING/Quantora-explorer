@@ -1,0 +1,19 @@
+name: Secure Time Sync & Anti-Tampering
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+
+jobs:
+  secure-time:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify time with trusted NTP servers
+        run: python scripts/check_ntp.py --ntp-pool time.cloudflare.com,time.google.com --output ntp_status.json
+      - name: Detect tampering or drift
+        run: python scripts/tamper_check.py --input ntp_status.json
+      - name: Upload NTP status
+        uses: actions/upload-artifact@v4
+        with:
+          name: ntp-status
+          path: ntp_status.json

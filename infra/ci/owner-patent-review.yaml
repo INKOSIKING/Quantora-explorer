@@ -1,0 +1,19 @@
+name: Owner-Only Patent/Innovation Review
+
+on:
+  schedule:
+    - cron: "0 13 * * 1"
+
+jobs:
+  patent-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scan for patentable innovations
+        run: python scripts/scan_for_patents.py --src services/ --owner "Comfort Lindokuhle Mhaleni" --output innovations.json
+      - name: Owner review and log
+        run: python scripts/log_owner_innovations.py --input innovations.json --owner "Comfort Lindokuhle Mhaleni" --output patent_review_log.json
+      - name: Upload patent review log
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-patent-review-log
+          path: patent_review_log.json

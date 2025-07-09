@@ -1,0 +1,20 @@
+name: Security Chaos Engineering
+
+on:
+  workflow_dispatch:
+
+jobs:
+  chaos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inject simulated network partition
+        run: |
+          kubectl label node $(kubectl get nodes -o jsonpath='{.items[0].metadata.name}') chaos=enabled
+          kubectl annotate deployment -n quantora ai "chaos.kubernetes.io/network-partition=simulate"
+      - name: Simulate secret leakage
+        run: |
+          kubectl exec deploy/ai -n quantora -- sh -c 'echo "LEAKED_SECRET=12345" > /tmp/leak.txt'
+      - name: Validate detection and alerting
+        run: |
+          # This is a placeholder for your SIEM/alert validation script
+          python scripts/validate_alerts.py

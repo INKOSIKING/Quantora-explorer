@@ -1,0 +1,19 @@
+name: Owner-Only Performance & Uptime Reports
+
+on:
+  schedule:
+    - cron: "0 12 * * *"
+
+jobs:
+  uptime-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect internal uptime/performance metrics
+        run: python scripts/collect_performance.py --output perf_metrics.json
+      - name: Owner review/approval
+        run: python scripts/owner_sign_report.py --input perf_metrics.json --owner "Comfort Lindokuhle Mhaleni" --output signed_perf.json
+      - name: Upload signed performance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-uptime-report
+          path: signed_perf.json

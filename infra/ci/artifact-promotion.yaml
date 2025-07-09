@@ -1,0 +1,18 @@
+name: Secure Artifact Promotion
+
+on:
+  workflow_dispatch:
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact and signature
+        run: |
+          curl -O https://artifacts.quantora.com/staging/build.tar.gz
+          curl -O https://artifacts.quantora.com/staging/build.sig
+      - name: Verify signature (Cosign)
+        run: cosign verify-blob --key cosign.pub --signature build.sig build.tar.gz
+      - name: Promote to production
+        run: |
+          curl -X POST -F 'file=@build.tar.gz' https://artifacts.quantora.com/prod/upload

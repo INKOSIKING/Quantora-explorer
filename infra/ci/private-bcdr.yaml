@@ -1,0 +1,19 @@
+name: Private BCDR (Business Continuity/Disaster Recovery) Automation
+
+on:
+  schedule:
+    - cron: "0 4 * * 0"
+
+jobs:
+  bcdr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Simulate disaster scenario
+        run: python scripts/simulate_disaster.py --scenarios configs/bcdr_scenarios.yaml --output disaster_result.json
+      - name: Test failover and recovery
+        run: python scripts/test_failover.py --input disaster_result.json --output failover_report.json
+      - name: Upload BCDR test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bcdr-report
+          path: failover_report.json

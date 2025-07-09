@@ -1,0 +1,18 @@
+name: Internal Innovation Pipeline & Experiment Tracking
+
+on:
+  workflow_dispatch:
+
+jobs:
+  innovation-tracker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Register new experiments
+        run: python scripts/register_experiment.py --input experiments/new_experiments.json --output experiment_register.json
+      - name: Track progress and outcomes
+        run: python scripts/track_experiment.py --input experiment_register.json --output experiment_progress.json
+      - name: Upload innovation pipeline report
+        uses: actions/upload-artifact@v4
+        with:
+          name: innovation-report
+          path: experiment_progress.json

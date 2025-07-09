@@ -1,0 +1,9 @@
+algorithm: kyber768
+key_rotation_interval: 7d
+encryption:
+  enabled: true
+  handshake_protocol: MLS_v1.1
+  post_quantum: true
+audit:
+  log_encrypted: true
+  log_rotation_days: 14

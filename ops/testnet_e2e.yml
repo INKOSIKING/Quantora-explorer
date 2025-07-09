@@ -1,0 +1,31 @@
+name: Testnet End-to-End Simulation
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 0'  # Weekly
+
+jobs:
+  full-sim:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout infra & code
+        uses: actions/checkout@v4
+      - name: Deploy fresh testnet
+        run: ./ops/deploy_testnet.sh --fresh --validators=8 --bootnodes=2
+      - name: Simulate runtime upgrade
+        run: ./ops/simulate_upgrade.sh --network testnet
+      - name: Simulate fork/reorg
+        run: ./ops/simulate_fork_reorg.sh --network testnet
+      - name: Simulate validator churn
+        run: ./ops/simulate_validator_churn.sh --network testnet
+      - name: Exploit attempts
+        run: ./ops/simulate_exploits.sh --network testnet
+      - name: High tx/perf load
+        run: ./ops/load_test.sh --network testnet --rate 1000 --duration 10m
+      - name: Gather logs/artifacts
+        run: ./ops/collect_artifacts.sh --network testnet
+      - name: Report results
+        uses: actions/upload-artifact@v4
+        with:
+          name: testnet-e2e-results
+          path: artifacts/

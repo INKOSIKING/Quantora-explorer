@@ -1,0 +1,17 @@
+name: JIT Access Automation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  jit-access:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Grant JIT access
+        run: |
+          python scripts/jit_access.py --user ${{ github.actor }} --duration 2h --role admin
+      - name: Revoke access after duration
+        run: |
+          sleep 7200
+          python scripts/jit_access.py --user ${{ github.actor }} --revoke

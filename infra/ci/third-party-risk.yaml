@@ -1,0 +1,22 @@
+name: Third-Party Risk Monitoring
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # Daily
+
+jobs:
+  third-party-risk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan integrations against risk database
+        run: |
+          python scripts/third_party_risk.py --input services/integrations/ --output third_party_risk.json
+      - name: Notify on high-risk vendors
+        run: |
+          python scripts/notify_high_risk.py --input third_party_risk.json
+      - name: Upload risk report
+        uses: actions/upload-artifact@v4
+        with:
+          name: third-party-risk-report
+          path: third_party_risk.json

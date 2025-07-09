@@ -1,0 +1,19 @@
+name: Owner Data Retention/Deletion Policy Enforcement
+
+on:
+  schedule:
+    - cron: "0 10 * * *"
+
+jobs:
+  data-retention:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce retention/deletion policies
+        run: python scripts/enforce_retention_policy.py --config configs/retention_policy.yaml --owner "Comfort Lindokuhle Mhaleni" --output retention_report.json
+      - name: Owner sign-off on retention actions
+        run: python scripts/owner_sign_retention.py --input retention_report.json --owner "Comfort Lindokuhle Mhaleni" --output retention_signed.json
+      - name: Upload signed retention report
+        uses: actions/upload-artifact@v4
+        with:
+          name: retention-owner-signed
+          path: retention_signed.json

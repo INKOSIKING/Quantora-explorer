@@ -1,0 +1,18 @@
+name: Owner-Exclusive Release Management
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release-management:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Review pending releases
+        run: python scripts/review_pending_releases.py --owner "Comfort Lindokuhle Mhaleni" --output pending_releases.json
+      - name: Owner approval/sign-off
+        run: python scripts/owner_approve_release.py --input pending_releases.json --owner "Comfort Lindokuhle Mhaleni" --output release_approval_log.json
+      - name: Upload signed release log
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-release-approval-log
+          path: release_approval_log.json

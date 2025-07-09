@@ -1,0 +1,20 @@
+name: Internal Red Team Automation
+
+on:
+  schedule:
+    - cron: "0 1 * * 6" # Weekly
+
+jobs:
+  internal-redteam:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Launch internal attack simulations
+        run: python scripts/internal_redteam.py --scenarios configs/redteam_scenarios.yaml --output redteam_results.json
+      - name: Collect detection/response evidence
+        run: python scripts/collect_redteam_evidence.py --input redteam_results.json --output redteam_evidence.json
+      - name: Upload red team evidence (internal)
+        uses: actions/upload-artifact@v4
+        with:
+          name: redteam-evidence
+          path: redteam_evidence.json

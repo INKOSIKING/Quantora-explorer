@@ -1,0 +1,356 @@
+
+const fs = require('fs');
+const path = require('path');
+
+class ExchangeSecurityAudit {
+    constructor() {
+        this.exchangeVulnerabilities = [];
+        this.tradingIssues = [];
+        this.orderBookIssues = [];
+        this.walletIssues = [];
+    }
+
+    async auditExchange() {
+        console.log('🏦 Starting Exchange Security Audit...');
+        
+        // Audit exchange components
+        await this.auditTradingEngine();
+        await this.auditOrderBook();
+        await this.auditWalletSecurity();
+        await this.auditAPI();
+        await this.auditAuthentication();
+        
+        this.generateExchangeReport();
+    }
+
+    async auditTradingEngine() {
+        console.log('⚡ Auditing Trading Engine...');
+        
+        const tradingFiles = [
+            'public/exchange.js',
+            'src/trading/',
+            'src/exchange/'
+        ];
+        
+        for (const filePath of tradingFiles) {
+            if (fs.existsSync(filePath)) {
+                if (fs.statSync(filePath).isFile()) {
+                    await this.auditFile(filePath, 'TRADING_ENGINE');
+                } else {
+                    // Directory - audit all files
+                    const files = this.getFilesInDirectory(filePath);
+                    for (const file of files) {
+                        await this.auditFile(file, 'TRADING_ENGINE');
+                    }
+                }
+            }
+        }
+    }
+
+    async auditOrderBook() {
+        console.log('📖 Auditing Order Book...');
+        
+        // Check for order book manipulation vulnerabilities
+        const orderBookPatterns = [
+            { pattern: /order.*amount.*0/gi, issue: 'ZERO_AMOUNT_ORDER', severity: 'HIGH' },
+            { pattern: /price.*manipulation/gi, issue: 'PRICE_MANIPULATION', severity: 'CRITICAL' },
+            { pattern: /front.*running/gi, issue: 'FRONT_RUNNING', severity: 'HIGH' },
+            { pattern: /wash.*trading/gi, issue: 'WASH_TRADING', severity: 'HIGH' },
+            { pattern: /spoofing/gi, issue: 'ORDER_SPOOFING', severity: 'HIGH' }
+        ];
+        
+        await this.checkPatterns('public/exchange.js', orderBookPatterns, 'ORDER_BOOK');
+    }
+
+    async auditWalletSecurity() {
+        console.log('💰 Auditing Wallet Security...');
+        
+        const walletPatterns = [
+            { pattern: /private.*key.*log/gi, issue: 'PRIVATE_KEY_EXPOSURE', severity: 'CRITICAL' },
+            { pattern: /seed.*phrase.*log/gi, issue: 'SEED_EXPOSURE', severity: 'CRITICAL' },
+            { pattern: /balance.*subtract.*check/gi, issue: 'INSUFFICIENT_BALANCE_CHECK', severity: 'HIGH' },
+            { pattern: /withdraw.*limit/gi, issue: 'WITHDRAWAL_LIMIT', severity: 'MEDIUM' },
+            { pattern: /cold.*storage/gi, issue: 'COLD_STORAGE_IMPLEMENTATION', severity: 'INFO' }
+        ];
+        
+        await this.checkPatterns('./src/', walletPatterns, 'WALLET');
+    }
+
+    async auditAPI() {
+        console.log('🔌 Auditing API Security...');
+        
+        const apiPatterns = [
+            { pattern: /cors.*\*/gi, issue: 'PERMISSIVE_CORS', severity: 'HIGH' },
+            { pattern: /rate.*limit/gi, issue: 'RATE_LIMITING', severity: 'MEDIUM' },
+            { pattern: /authentication.*bypass/gi, issue: 'AUTH_BYPASS', severity: 'CRITICAL' },
+            { pattern: /admin.*endpoint/gi, issue: 'ADMIN_ENDPOINT', severity: 'HIGH' },
+            { pattern: /debug.*endpoint/gi, issue: 'DEBUG_ENDPOINT', severity: 'MEDIUM' }
+        ];
+        
+        await this.checkPatterns('./src/', apiPatterns, 'API');
+    }
+
+    async auditAuthentication() {
+        console.log('🔐 Auditing Authentication...');
+        
+        const authPatterns = [
+            { pattern: /jwt.*secret.*hardcoded/gi, issue: 'HARDCODED_JWT_SECRET', severity: 'CRITICAL' },
+            { pattern: /session.*timeout.*none/gi, issue: 'NO_SESSION_TIMEOUT', severity: 'HIGH' },
+            { pattern: /password.*plain.*text/gi, issue: 'PLAINTEXT_PASSWORD', severity: 'CRITICAL' },
+            { pattern: /2fa.*disabled/gi, issue: 'NO_2FA', severity: 'HIGH' },
+            { pattern: /brute.*force.*protection/gi, issue: 'BRUTE_FORCE_PROTECTION', severity: 'HIGH' }
+        ];
+        
+        await this.checkPatterns('./src/', authPatterns, 'AUTHENTICATION');
+    }
+
+    async checkPatterns(filePath, patterns, category) {
+        if (!fs.existsSync(filePath)) return;
+        
+        try {
+            let content = '';
+            if (fs.statSync(filePath).isFile()) {
+                content = fs.readFileSync(filePath, 'utf-8');
+                this.checkFilePatterns(filePath, content, patterns, category);
+            } else {
+                // Directory
+                const files = this.getFilesInDirectory(filePath);
+                for (const file of files) {
+                    content = fs.readFileSync(file, 'utf-8');
+                    this.checkFilePatterns(file, content, patterns, category);
+                }
+            }
+        } catch (error) {
+            console.error(`Error checking patterns in ${filePath}:`, error.message);
+        }
+    }
+
+    checkFilePatterns(filePath, content, patterns, category) {
+        patterns.forEach(patternObj => {
+            const matches = content.match(patternObj.pattern);
+            if (matches) {
+                matches.forEach(match => {
+                    this.exchangeVulnerabilities.push({
+                        file: filePath,
+                        category: category,
+                        issue: patternObj.issue,
+                        severity: patternObj.severity,
+                        match: match.trim(),
+                        description: this.getIssueDescription(patternObj.issue)
+                    });
+                });
+            }
+        });
+    }
+
+    getFilesInDirectory(dirPath) {
+        const files = [];
+        try {
+            const items = fs.readdirSync(dirPath);
+            items.forEach(item => {
+                const fullPath = path.join(dirPath, item);
+                if (fs.statSync(fullPath).isFile() && this.shouldAuditFile(fullPath)) {
+                    files.push(fullPath);
+                } else if (fs.statSync(fullPath).isDirectory()) {
+                    files.push(...this.getFilesInDirectory(fullPath));
+                }
+            });
+        } catch (error) {
+            console.error(`Error reading directory ${dirPath}:`, error.message);
+        }
+        return files;
+    }
+
+    shouldAuditFile(filePath) {
+        const extensions = ['.js', '.ts', '.json'];
+        return extensions.some(ext => filePath.endsWith(ext));
+    }
+
+    async auditFile(filePath, category) {
+        try {
+            if (!fs.existsSync(filePath)) return;
+            
+            const content = fs.readFileSync(filePath, 'utf-8');
+            
+            // Check for general security issues
+            this.checkGeneralSecurity(filePath, content, category);
+            
+            // Check for exchange-specific issues
+            this.checkExchangeSpecific(filePath, content, category);
+            
+        } catch (error) {
+            console.error(`Error auditing file ${filePath}:`, error.message);
+        }
+    }
+
+    checkGeneralSecurity(filePath, content, category) {
+        // Check for common security issues
+        const securityChecks = [
+            { pattern: /eval\s*\(/gi, issue: 'EVAL_USAGE', severity: 'CRITICAL' },
+            { pattern: /innerHTML\s*=/gi, issue: 'INNERHTML_XSS', severity: 'HIGH' },
+            { pattern: /document\.write/gi, issue: 'DOCUMENT_WRITE', severity: 'HIGH' },
+            { pattern: /Math\.random\(\)/gi, issue: 'WEAK_RANDOM', severity: 'MEDIUM' },
+            { pattern: /console\.log\(.*(password|secret|key)/gi, issue: 'CREDENTIAL_LOGGING', severity: 'HIGH' }
+        ];
+        
+        securityChecks.forEach(check => {
+            const matches = content.match(check.pattern);
+            if (matches) {
+                matches.forEach(match => {
+                    this.exchangeVulnerabilities.push({
+                        file: filePath,
+                        category: category,
+                        issue: check.issue,
+                        severity: check.severity,
+                        match: match.trim(),
+                        description: this.getIssueDescription(check.issue)
+                    });
+                });
+            }
+        });
+    }
+
+    checkExchangeSpecific(filePath, content, category) {
+        // Exchange-specific security checks
+        if (content.includes('balance') && content.includes('subtract')) {
+            const hasBalanceCheck = content.includes('balance >= amount') || 
+                                  content.includes('balance > amount') ||
+                                  content.includes('checkBalance');
+            
+            if (!hasBalanceCheck) {
+                this.exchangeVulnerabilities.push({
+                    file: filePath,
+                    category: category,
+                    issue: 'MISSING_BALANCE_CHECK',
+                    severity: 'CRITICAL',
+                    match: 'balance subtraction without check',
+                    description: 'Balance subtraction without sufficient balance verification'
+                });
+            }
+        }
+        
+        // Check for transaction overflow
+        if (content.includes('amount') && content.includes('+')) {
+            const hasOverflowCheck = content.includes('SafeMath') || 
+                                   content.includes('overflow') ||
+                                   content.includes('BigNumber');
+            
+            if (!hasOverflowCheck) {
+                this.exchangeVulnerabilities.push({
+                    file: filePath,
+                    category: category,
+                    issue: 'POTENTIAL_OVERFLOW',
+                    severity: 'HIGH',
+                    match: 'arithmetic without overflow protection',
+                    description: 'Arithmetic operations without overflow protection'
+                });
+            }
+        }
+    }
+
+    getIssueDescription(issue) {
+        const descriptions = {
+            'ZERO_AMOUNT_ORDER': 'Orders with zero amount can disrupt order book',
+            'PRICE_MANIPULATION': 'Potential price manipulation vulnerability',
+            'FRONT_RUNNING': 'Front-running attack vector detected',
+            'WASH_TRADING': 'Wash trading vulnerability',
+            'ORDER_SPOOFING': 'Order spoofing attack vector',
+            'PRIVATE_KEY_EXPOSURE': 'Private key potentially exposed in logs',
+            'SEED_EXPOSURE': 'Seed phrase potentially exposed',
+            'INSUFFICIENT_BALANCE_CHECK': 'Insufficient balance validation',
+            'WITHDRAWAL_LIMIT': 'Withdrawal limit implementation needed',
+            'PERMISSIVE_CORS': 'Overly permissive CORS policy',
+            'RATE_LIMITING': 'Missing or insufficient rate limiting',
+            'AUTH_BYPASS': 'Authentication bypass vulnerability',
+            'ADMIN_ENDPOINT': 'Admin endpoint security concern',
+            'DEBUG_ENDPOINT': 'Debug endpoint should not be in production',
+            'HARDCODED_JWT_SECRET': 'JWT secret should not be hardcoded',
+            'NO_SESSION_TIMEOUT': 'Session timeout not implemented',
+            'PLAINTEXT_PASSWORD': 'Password stored in plaintext',
+            'NO_2FA': 'Two-factor authentication not implemented',
+            'BRUTE_FORCE_PROTECTION': 'Brute force protection needed',
+            'EVAL_USAGE': 'Use of eval() creates code injection risk',
+            'INNERHTML_XSS': 'innerHTML usage creates XSS risk',
+            'DOCUMENT_WRITE': 'document.write creates XSS risk',
+            'WEAK_RANDOM': 'Math.random() is cryptographically weak',
+            'CREDENTIAL_LOGGING': 'Credentials should not be logged',
+            'MISSING_BALANCE_CHECK': 'Critical: Balance not verified before deduction',
+            'POTENTIAL_OVERFLOW': 'Arithmetic operations need overflow protection'
+        };
+        return descriptions[issue] || 'Security issue detected';
+    }
+
+    generateExchangeReport() {
+        console.log('\n🏦 EXCHANGE SECURITY AUDIT RESULTS');
+        console.log('=' .repeat(60));
+        
+        const critical = this.exchangeVulnerabilities.filter(v => v.severity === 'CRITICAL');
+        const high = this.exchangeVulnerabilities.filter(v => v.severity === 'HIGH');
+        const medium = this.exchangeVulnerabilities.filter(v => v.severity === 'MEDIUM');
+        
+        if (critical.length > 0) {
+            console.log(`🚨 CRITICAL EXCHANGE VULNERABILITIES: ${critical.length}`);
+            critical.forEach(vuln => {
+                console.log(`  ${vuln.file} - ${vuln.issue}: ${vuln.description}`);
+            });
+        }
+        
+        if (high.length > 0) {
+            console.log(`⚠️  HIGH SEVERITY EXCHANGE ISSUES: ${high.length}`);
+            high.forEach(vuln => {
+                console.log(`  ${vuln.file} - ${vuln.issue}: ${vuln.description}`);
+            });
+        }
+        
+        if (medium.length > 0) {
+            console.log(`📋 MEDIUM SEVERITY EXCHANGE ISSUES: ${medium.length}`);
+        }
+        
+        // Category breakdown
+        const categories = [...new Set(this.exchangeVulnerabilities.map(v => v.category))];
+        console.log('\n📊 ISSUES BY CATEGORY:');
+        categories.forEach(category => {
+            const count = this.exchangeVulnerabilities.filter(v => v.category === category).length;
+            console.log(`  ${category}: ${count}`);
+        });
+        
+        console.log('\n📊 EXCHANGE AUDIT SUMMARY:');
+        console.log(`  Total Issues: ${this.exchangeVulnerabilities.length}`);
+        console.log(`  Critical: ${critical.length}`);
+        console.log(`  High: ${high.length}`);
+        console.log(`  Medium: ${medium.length}`);
+        
+        if (critical.length === 0 && high.length === 0) {
+            console.log('\n✅ NO CRITICAL EXCHANGE VULNERABILITIES FOUND');
+        } else {
+            console.log('\n⚠️  CRITICAL EXCHANGE ISSUES REQUIRE IMMEDIATE ATTENTION');
+        }
+        
+        // Save report
+        const report = {
+            timestamp: new Date().toISOString(),
+            exchangeAudit: {
+                totalIssues: this.exchangeVulnerabilities.length,
+                critical: critical.length,
+                high: high.length,
+                medium: medium.length,
+                categories: categories.map(cat => ({
+                    category: cat,
+                    count: this.exchangeVulnerabilities.filter(v => v.category === cat).length
+                }))
+            },
+            vulnerabilities: this.exchangeVulnerabilities
+        };
+        
+        fs.writeFileSync('exchange_security_audit.json', JSON.stringify(report, null, 2));
+        console.log('\n📄 Exchange audit report saved: exchange_security_audit.json');
+    }
+}
+
+// Execute audit if run directly
+if (require.main === module) {
+    const auditor = new ExchangeSecurityAudit();
+    auditor.auditExchange().catch(console.error);
+}
+
+module.exports = ExchangeSecurityAudit;

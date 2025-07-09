@@ -1,0 +1,19 @@
+name: Threat Intelligence Correlation
+
+on:
+  schedule:
+    - cron: "0 * * * *" # Hourly
+
+jobs:
+  threat-correlation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch threat feeds
+        run: curl -o feeds.json https://threatfeeds.quantora.com/current
+      - name: Correlate with environment logs
+        run: python scripts/correlate_threats.py --feeds feeds.json --logs logs/security.log --output correlated.json
+      - name: Upload correlation results
+        uses: actions/upload-artifact@v4
+        with:
+          name: threat-correlation
+          path: correlated.json

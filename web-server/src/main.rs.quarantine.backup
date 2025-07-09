@@ -1,0 +1,324 @@
+
+use axum::{
+    extract::Path,
+    http::StatusCode,
+    response::{Html, Json},
+    routing::{get, post},
+    Router,
+};
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use tower_http::{cors::CorsLayer, services::ServeDir};
+use tracing::{info, warn};
+
+#[derive(Serialize, Deserialize)]
+struct ApiResponse {
+    status: String,
+    message: String,
+    data: Option<serde_json::Value>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct BlockchainStats {
+    total_supply: String,
+    circulating_supply: String,
+    tps: u64,
+    validators: u32,
+    blocks: u64,
+    market_cap: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct WalletInfo {
+    address: String,
+    balance: String,
+    tokens: Vec<TokenBalance>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct TokenBalance {
+    symbol: String,
+    balance: String,
+    value_usd: String,
+}
+
+#[tokio::main]
+async fn main() {
+    tracing_subscriber::init();
+    
+    info!("🚀 Starting Quantora Web Platform Server on 0.0.0.0:5000");
+
+    let app = Router::new()
+        // Static file serving
+        .nest_service("/", ServeDir::new("."))
+        
+        // API routes
+        .route("/api/health", get(health_check))
+        .route("/api/stats", get(get_blockchain_stats))
+        .route("/api/wallet/:address", get(get_wallet_info))
+        .route("/api/tokens", get(get_token_list))
+        .route("/api/exchange/rates", get(get_exchange_rates))
+        .route("/api/staking/pools", get(get_staking_pools))
+        .route("/api/governance/proposals", get(get_governance_proposals))
+        .route("/api/nft/collections", get(get_nft_collections))
+        .route("/api/defi/pools", get(get_defi_pools))
+        
+        // Platform preview routes
+        .route("/platform", get(platform_preview))
+        .route("/app-preview", get(app_preview))
+        .route("/explorer", get(explorer_preview))
+        .route("/exchange", get(exchange_preview))
+        .route("/wallet", get(wallet_preview))
+        
+        .layer(CorsLayer::permissive());
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:5000")
+        .await
+        .expect("Failed to bind to port 5000");
+
+    info!("✅ Quantora Web Platform is live at http://0.0.0.0:5000");
+    
+    axum::serve(listener, app)
+        .await
+        .expect("Server failed to start");
+}
+
+async fn health_check() -> Json<ApiResponse> {
+    Json(ApiResponse {
+        status: "ok".to_string(),
+        message: "Quantora Platform is healthy".to_string(),
+        data: None,
+    })
+}
+
+async fn get_blockchain_stats() -> Json<BlockchainStats> {
+    Json(BlockchainStats {
+        total_supply: "100,000,000 QTR".to_string(),
+        circulating_supply: "75,000,000 QTR".to_string(),
+        tps: 75000,
+        validators: 1500,
+        blocks: 2500000,
+        market_cap: "$2.5B".to_string(),
+    })
+}
+
+async fn get_wallet_info(Path(address): Path<String>) -> Json<WalletInfo> {
+    Json(WalletInfo {
+        address,
+        balance: "1,250.50 QTR".to_string(),
+        tokens: vec![
+            TokenBalance {
+                symbol: "QTR".to_string(),
+                balance: "1,250.50".to_string(),
+                value_usd: "$3,126.25".to_string(),
+            },
+            TokenBalance {
+                symbol: "ETH".to_string(),
+                balance: "2.5".to_string(),
+                value_usd: "$5,000.00".to_string(),
+            },
+        ],
+    })
+}
+
+async fn get_token_list() -> Json<Vec<HashMap<String, serde_json::Value>>> {
+    Json(vec![
+        serde_json::from_str(r#"{"symbol": "QTR", "name": "Quantora", "price": "$2.50", "change": "+5.2%"}"#).unwrap(),
+        serde_json::from_str(r#"{"symbol": "ETH", "name": "Ethereum", "price": "$2,000", "change": "+2.1%"}"#).unwrap(),
+        serde_json::from_str(r#"{"symbol": "BTC", "name": "Bitcoin", "price": "$45,000", "change": "+1.8%"}"#).unwrap(),
+    ])
+}
+
+async fn get_exchange_rates() -> Json<HashMap<String, String>> {
+    let mut rates = HashMap::new();
+    rates.insert("QTR/USD".to_string(), "2.50".to_string());
+    rates.insert("ETH/USD".to_string(), "2000.00".to_string());
+    rates.insert("BTC/USD".to_string(), "45000.00".to_string());
+    Json(rates)
+}
+
+async fn get_staking_pools() -> Json<Vec<HashMap<String, serde_json::Value>>> {
+    Json(vec![
+        serde_json::from_str(r#"{"name": "QTR Staking", "apy": "12.5%", "tvl": "$50M", "minimum": "100 QTR"}"#).unwrap(),
+        serde_json::from_str(r#"{"name": "ETH-QTR LP", "apy": "25.0%", "tvl": "$25M", "minimum": "1 ETH"}"#).unwrap(),
+    ])
+}
+
+async fn get_governance_proposals() -> Json<Vec<HashMap<String, serde_json::Value>>> {
+    Json(vec![
+        serde_json::from_str(r#"{"id": 1, "title": "Increase Validator Rewards", "status": "Active", "votes": 1250000}"#).unwrap(),
+        serde_json::from_str(r#"{"id": 2, "title": "New DeFi Integration", "status": "Pending", "votes": 850000}"#).unwrap(),
+    ])
+}
+
+async fn get_nft_collections() -> Json<Vec<HashMap<String, serde_json::Value>>> {
+    Json(vec![
+        serde_json::from_str(r#"{"name": "Quantora Genesis", "floor": "5.2 QTR", "volume": "1,250 QTR", "items": 10000}"#).unwrap(),
+        serde_json::from_str(r#"{"name": "Quantum Crystals", "floor": "2.1 QTR", "volume": "850 QTR", "items": 5000}"#).unwrap(),
+    ])
+}
+
+async fn get_defi_pools() -> Json<Vec<HashMap<String, serde_json::Value>>> {
+    Json(vec![
+        serde_json::from_str(r#"{"pair": "QTR/ETH", "tvl": "$10M", "apy": "45.2%", "volume24h": "$2.5M"}"#).unwrap(),
+        serde_json::from_str(r#"{"pair": "QTR/USDC", "tvl": "$15M", "apy": "38.1%", "volume24h": "$5.2M"}"#).unwrap(),
+    ])
+}
+
+async fn platform_preview() -> Html<String> {
+    Html(include_str!("../../platform.html").to_string())
+}
+
+async fn app_preview() -> Html<String> {
+    Html(include_str!("../../app-preview.html").to_string())
+}
+
+async fn explorer_preview() -> Html<String> {
+    Html(r#"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantora Explorer</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="platform-container">
+        <header class="platform-header">
+            <h1>🔍 Quantora Explorer</h1>
+        </header>
+        <main class="explorer-main">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Latest Block</h3>
+                    <p class="stat-number">2,500,087</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Transactions</h3>
+                    <p class="stat-number">125,456,789</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Validators</h3>
+                    <p class="stat-number">1,523</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Network TPS</h3>
+                    <p class="stat-number">75,000</p>
+                </div>
+            </div>
+            <div class="recent-blocks">
+                <h3>Recent Blocks</h3>
+                <div class="block-list">
+                    <div class="block-item">Block #2,500,087 - 12 txns - 2 sec ago</div>
+                    <div class="block-item">Block #2,500,086 - 8 txns - 4 sec ago</div>
+                    <div class="block-item">Block #2,500,085 - 15 txns - 6 sec ago</div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
+    "#.to_string())
+}
+
+async fn exchange_preview() -> Html<String> {
+    Html(r#"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantora Exchange</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="platform-container">
+        <header class="platform-header">
+            <h1>💱 Quantora Exchange</h1>
+        </header>
+        <main class="exchange-main">
+            <div class="trading-interface">
+                <div class="orderbook">
+                    <h3>Order Book (QTR/USD)</h3>
+                    <div class="orders">
+                        <div class="sell-orders">
+                            <div class="order">2.52 - 1,000 QTR</div>
+                            <div class="order">2.51 - 2,500 QTR</div>
+                            <div class="order">2.50 - 5,000 QTR</div>
+                        </div>
+                        <div class="current-price">$2.50</div>
+                        <div class="buy-orders">
+                            <div class="order">2.49 - 3,000 QTR</div>
+                            <div class="order">2.48 - 1,500 QTR</div>
+                            <div class="order">2.47 - 2,000 QTR</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="trade-form">
+                    <h3>Place Order</h3>
+                    <select>
+                        <option>Market Buy</option>
+                        <option>Limit Buy</option>
+                        <option>Market Sell</option>
+                        <option>Limit Sell</option>
+                    </select>
+                    <input type="number" placeholder="Amount (QTR)">
+                    <input type="number" placeholder="Price (USD)">
+                    <button class="btn-primary">Place Order</button>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
+    "#.to_string())
+}
+
+async fn wallet_preview() -> Html<String> {
+    Html(r#"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantora Wallet</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="platform-container">
+        <header class="platform-header">
+            <h1>👛 Quantora Wallet</h1>
+        </header>
+        <main class="wallet-main">
+            <div class="wallet-overview">
+                <div class="balance-card">
+                    <h3>Total Balance</h3>
+                    <p class="balance-amount">$8,126.25</p>
+                </div>
+                <div class="tokens-list">
+                    <h3>Your Tokens</h3>
+                    <div class="token-item">
+                        <span>QTR</span>
+                        <span>1,250.50</span>
+                        <span>$3,126.25</span>
+                    </div>
+                    <div class="token-item">
+                        <span>ETH</span>
+                        <span>2.50</span>
+                        <span>$5,000.00</span>
+                    </div>
+                </div>
+                <div class="wallet-actions">
+                    <button class="btn-primary">Send</button>
+                    <button class="btn-outline">Receive</button>
+                    <button class="btn-outline">Swap</button>
+                    <button class="btn-outline">Stake</button>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
+    "#.to_string())
+}

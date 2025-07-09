@@ -1,0 +1,59 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dir:
+          - services/ai
+          - services/fintech
+          - services/marketplace
+          - services/blockchain/api-gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: cd ${{ matrix.dir }} && npm ci
+      - run: cd ${{ matrix.dir }} && npm run lint
+      - run: cd ${{ matrix.dir }} && npm test
+
+  build-docker:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    strategy:
+      matrix:
+        dir:
+          - services/ai
+          - services/fintech
+          - services/marketplace
+          - services/blockchain/api-gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: docker build -t ghcr.io/${{ github.repository }}/${{ matrix.dir }}:sha-${{ github.sha }} ${{ matrix.dir }}
+      - run: docker push ghcr.io/${{ github.repository }}/${{ matrix.dir }}:sha-${{ github.sha }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-docker
+    steps:
+      - name: Deploy to Kubernetes
+        uses: azure/k8s-deploy@v4
+        with:
+          manifests: |
+            ./infra/k8s/${{ matrix.dir }}/deployment.yaml
+          images: |
+            ghcr.io/${{ github.repository }}/${{ matrix.dir }}:sha-${{ github.sha }}

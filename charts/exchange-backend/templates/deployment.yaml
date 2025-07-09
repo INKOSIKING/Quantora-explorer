@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "exchange-backend.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "exchange-backend.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "exchange-backend.name" . }}
+    spec:
+      containers:
+        - name: exchange-backend
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          envFrom:
+            - secretRef:
+                name: exchange-backend-secrets
+          ports:
+            - containerPort: 3000

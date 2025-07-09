@@ -1,0 +1,29 @@
+name: SBOM Attestation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  sbom-attest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: sbom.json
+      - name: Attest SBOM
+        uses: slsa-framework/slsa-github-generator@v1.7.0
+        with:
+          attestation-type: sbom
+          artifact-path: sbom.json
+      - name: Upload SBOM attestation
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-attestation
+          path: sbom.json

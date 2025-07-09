@@ -1,0 +1,20 @@
+name: Internal JIT Privilege Escalation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  jit-privilege:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request JIT privilege (internal)
+        run: python scripts/request_jit_privilege.py --user ${{ github.actor }} --reason "${{ github.event.inputs.reason }}" --duration ${{ github.event.inputs.duration }}
+      - name: Approve/escalate via internal workflow
+        run: python scripts/approve_jit.py --request_id $(cat jit_request_id.txt)
+      - name: Audit JIT privilege event
+        run: python scripts/audit_jit_event.py --request_id $(cat jit_request_id.txt) --output jit_audit.json
+      - name: Upload JIT audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: jit-privilege-audit
+          path: jit_audit.json

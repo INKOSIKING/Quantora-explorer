@@ -1,0 +1,25 @@
+name: Cross-Cloud Forensics
+
+on:
+  workflow_dispatch:
+
+jobs:
+  gather-forensics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch AWS incident data
+        run: |
+          aws s3 cp s3://quantora-forensics/aws/ ./forensics/aws/ --recursive
+      - name: Fetch Azure incident data
+        run: |
+          az storage blob download-batch -d ./forensics/azure/ -s quantora-forensics-azure
+      - name: Fetch GCP incident data
+        run: |
+          gsutil -m cp -r gs://quantora-forensics-gcp/* ./forensics/gcp/
+      - name: Normalize and archive forensics
+        run: python scripts/normalize_forensics.py --input ./forensics --output all-clouds-forensic-report.json
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-clouds-forensic-report
+          path: all-clouds-forensic-report.json

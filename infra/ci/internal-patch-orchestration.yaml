@@ -1,0 +1,19 @@
+name: Automated Internal Patch/Upgrade Orchestration
+
+on:
+  schedule:
+    - cron: "0 4 * * 6"
+
+jobs:
+  patch-orchestration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Discover patchable systems/services
+        run: python scripts/discover_patch_targets.py --scope internal --output patch_targets.json
+      - name: Orchestrate patching/upgrades
+        run: python scripts/patch_upgrade.py --input patch_targets.json --output patch_report.json
+      - name: Upload patch report
+        uses: actions/upload-artifact@v4
+        with:
+          name: patch-report
+          path: patch_report.json

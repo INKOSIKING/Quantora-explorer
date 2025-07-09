@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: confidential-pipeline
+  namespace: quantora-internal
+spec:
+  template:
+    spec:
+      containers:
+        - name: compute
+          image: quantora/internal-pipeline:secure
+          resources:
+            limits:
+              sgx.intel.com/epc: "64Mi"
+          securityContext:
+            runAsNonRoot: true
+            privileged: false
+      nodeSelector:
+        intel.feature.node.kubernetes.io/sgx: "true"
+      restartPolicy: Never

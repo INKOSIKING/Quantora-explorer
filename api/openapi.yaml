@@ -1,0 +1,33 @@
+openapi: 3.0.1
+info:
+  title: Quantora Explorer API
+  version: "v1"
+  description: |
+    REST API for blockchain explorer. Includes block, tx, address, contract endpoints.
+servers:
+  - url: /api/v1
+paths:
+  /block/{block_hash}:
+    get:
+      summary: Get block by hash
+      parameters:
+        - name: block_hash
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Block data
+  /search:
+    get:
+      summary: Full-text search
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Search results
+  # ... more endpoints
+components: {}

@@ -1,0 +1,6 @@
+{
+  "chain_id": "quantora-mainnet",
+  "genesis_time": "2025-01-01T00:00:00Z",
+  "validators": [],
+  "alloc": {}
+}

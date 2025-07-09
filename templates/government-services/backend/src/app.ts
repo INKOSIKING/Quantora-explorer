@@ -1,0 +1,13 @@
+import express from "express";
+import helmet from "helmet";
+import cors from "cors";
+import { servicesRouter } from "./routes/services";
+import { applicationsRouter } from "./routes/applications";
+const app = express();
+app.use(cors());
+app.use(helmet());
+app.use(express.json());
+app.use("/api/services", servicesRouter);
+app.use("/api/applications", applicationsRouter);
+app.get("/healthz", (_, res) => res.send("OK"));
+export default app;

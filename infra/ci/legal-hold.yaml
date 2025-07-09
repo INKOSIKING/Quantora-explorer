@@ -1,0 +1,20 @@
+name: Legal Hold & eDiscovery
+
+on:
+  workflow_dispatch:
+
+jobs:
+  legal-hold:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Identify data for legal hold
+        run: python scripts/legal_hold_identify.py --case ${{ github.event.inputs.case_id }} --output hold_data.json
+      - name: Quarantine relevant data
+        run: python scripts/quarantine_data.py --input hold_data.json
+      - name: Audit eDiscovery access
+        run: python scripts/audit_ediscovery.py --case ${{ github.event.inputs.case_id }} --output audit.json
+      - name: Upload legal hold audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: legal-hold-audit
+          path: audit.json

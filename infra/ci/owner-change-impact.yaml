@@ -1,0 +1,18 @@
+name: Owner-Only Change Impact Assessment
+
+on:
+  workflow_dispatch:
+
+jobs:
+  change-impact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assess change impact
+        run: python scripts/assess_change_impact.py --desc "${{ github.event.inputs.desc }}" --owner "Comfort Lindokuhle Mhaleni" --output change_impact.json
+      - name: Owner review and sign-off
+        run: python scripts/owner_sign_change_impact.py --input change_impact.json --owner "Comfort Lindokuhle Mhaleni" --output signed_change_impact.json
+      - name: Upload signed impact report
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-change-impact
+          path: signed_change_impact.json

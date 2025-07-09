@@ -1,0 +1,18 @@
+name: Custom Internal Developer Onboarding
+
+on:
+  workflow_dispatch:
+
+jobs:
+  onboarding:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Provision onboarding resources
+        run: python scripts/provision_onboarding.py --user ${{ github.actor }} --output onboarding_resources.json
+      - name: Send onboarding checklist/instructions
+        run: python scripts/send_onboarding_checklist.py --input onboarding_resources.json --user ${{ github.actor }}
+      - name: Upload onboarding record
+        uses: actions/upload-artifact@v4
+        with:
+          name: onboarding-record
+          path: onboarding_resources.json

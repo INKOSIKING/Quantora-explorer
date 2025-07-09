@@ -1,0 +1,22 @@
+name: Secure Dependency Lifecycle
+
+on:
+  schedule:
+    - cron: "0 4 * * *" # Daily
+
+jobs:
+  dep-lifecycle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update dependencies
+        run: |
+          pip install --upgrade pip
+          pip list --outdated > outdated.txt
+          pip-review --auto
+          npm update || true
+      - name: Scan new dependencies for vulnerabilities
+        uses: aquasecurity/trivy-action@v0.13.1
+        with:
+          scan-type: "fs"
+          scan-ref: "."

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: confidential-ai-serving
+  namespace: quantora
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: confidential-ai-serving
+  template:
+    metadata:
+      labels:
+        app: confidential-ai-serving
+    spec:
+      containers:
+        - name: ai-server
+          image: quantora/ai-server:confidential
+          securityContext:
+            privileged: false
+            runAsNonRoot: true
+          resources:
+            limits:
+              sgx.intel.com/epc: "32Mi"
+      nodeSelector:
+        intel.feature.node.kubernetes.io/sgx: "true"

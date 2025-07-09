@@ -1,0 +1,19 @@
+name: Owner-Only Business Continuity Drill Scheduler
+
+on:
+  schedule:
+    - cron: "0 4 * * 5"
+
+jobs:
+  bc-drill-scheduler:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Schedule and log continuity drill
+        run: python scripts/schedule_bc_drill.py --owner "Comfort Lindokuhle Mhaleni" --output drill_log.json
+      - name: Owner review and sign-off
+        run: python scripts/owner_sign_bc_drill.py --input drill_log.json --owner "Comfort Lindokuhle Mhaleni" --output signed_drill_log.json
+      - name: Upload signed drill log
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-bc-drill-log
+          path: signed_drill_log.json

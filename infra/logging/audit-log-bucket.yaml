@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "Immutable Audit Log S3 Bucket"
+Resources:
+  AuditLogBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: quantora-audit-logs
+      ObjectLockEnabled: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: "ExpireOldLogs"
+            Status: Enabled
+            ExpirationInDays: 365
+  AuditLogBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AuditLogBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Deny
+            Principal: "*"
+            Action: "s3:DeleteObject"
+            Resource: !Sub "${AuditLogBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                "s3:object-lock-remaining-retention-days": "365"

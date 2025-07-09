@@ -1,0 +1,31 @@
+name: Model Provenance Tracking
+
+on:
+  push:
+    paths:
+      - 'models/**'
+      - 'ml-pipelines/**'
+
+jobs:
+  model-provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate Model Hash
+        run: |
+          sha256sum models/*.pkl > model.sha256
+      - name: Log provenance
+        run: |
+          echo "MODEL_HASH=$(cat model.sha256)" >> $GITHUB_ENV
+          echo "TRAINING_DATA_HASH=$(sha256sum data/training.csv)" >> $GITHUB_ENV
+          echo "TRAINING_SCRIPT_HASH=$(sha256sum ml-pipelines/train.py)" >> $GITHUB_ENV
+      - name: Attest model with provenance
+        uses: slsa-framework/slsa-github-generator@v1.7.0
+        with:
+          attestation-type: custom
+          artifact-path: model.sha256
+      - name: Upload provenance log
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-provenance
+          path: model.sha256

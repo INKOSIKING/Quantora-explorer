@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: jwks-rotate
+  namespace: quantora
+spec:
+  schedule: "0 0 * * SUN" # Weekly
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: jwks-rotate
+              image: quantora/jwks-rotator:latest
+              env:
+                - name: VAULT_ADDR
+                  value: "https://vault.quantora.com"
+                - name: JWKS_PATH
+                  value: "/jwks"
+          restartPolicy: OnFailure

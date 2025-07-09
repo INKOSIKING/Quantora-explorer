@@ -1,0 +1,22 @@
+name: Reproducible Secure Build
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  reproducible-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build artifact (deterministically)
+        run: python scripts/build_deterministic.py --src services/ --output build.tar.gz
+      - name: Compare hash with last successful build
+        run: |
+          sha256sum build.tar.gz > build.sha256
+          diff build.sha256 prev_build.sha256 || echo "Non-reproducible build detected"
+      - name: Upload build hash
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-hash
+          path: build.sha256

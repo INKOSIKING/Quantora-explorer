@@ -1,0 +1,25 @@
+name: Artifact Provenance Validation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artifact
+        run: |
+          curl -O https://artifacts.quantora.com/builds/${{ github.sha }}.tar.gz
+      - name: Download provenance
+        run: |
+          curl -O https://artifacts.quantora.com/builds/${{ github.sha }}.intoto.jsonl
+      - name: Verify provenance
+        run: |
+          cosign verify-attestation --type slsaprovenance --key cosign.pub \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            --certificate-identity-regexp "github.com/quantora/quantora-platform" \
+            https://artifacts.quantora.com/builds/${{ github.sha }}.tar.gz

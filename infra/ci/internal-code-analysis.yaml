@@ -1,0 +1,23 @@
+name: Internal Static & Dynamic Code Analysis
+
+on:
+  push:
+    paths:
+      - "services/**"
+      - "infra/**"
+
+jobs:
+  code-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run static analysis
+        run: python scripts/static_analysis.py --src services/ --output static_report.json
+      - name: Run dynamic analysis
+        run: python scripts/dynamic_analysis.py --src services/ --output dynamic_report.json
+      - name: Upload analysis artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-analysis-reports
+          path: |
+            static_report.json
+            dynamic_report.json

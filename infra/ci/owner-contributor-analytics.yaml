@@ -1,0 +1,19 @@
+name: Owner-Only Workforce/Contributor Analytics
+
+on:
+  schedule:
+    - cron: "0 15 * * *"
+
+jobs:
+  contributor-analytics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Analyze contributor activity
+        run: python scripts/analyze_contributors.py --owner "Comfort Lindokuhle Mhaleni" --output contributor_analytics.json
+      - name: Owner review and sign-off
+        run: python scripts/owner_sign_contributor_analytics.py --input contributor_analytics.json --owner "Comfort Lindokuhle Mhaleni" --output signed_contributor_analytics.json
+      - name: Upload signed analytics report
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-contributor-analytics
+          path: signed_contributor_analytics.json

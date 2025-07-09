@@ -1,0 +1,27 @@
+statuspage:
+  url: "https://status.yourdomain.com"
+  components:
+    - name: Blockchain Mainnet
+      id: mainnet
+      description: Quantora Mainnet Chain
+    - name: Exchange API
+      id: exchange-api
+    - name: Explorer UI/API
+      id: explorer
+  alerts:
+    - type: incident
+      severity: critical
+      notify: [ "slack", "email", "statuspage" ]
+    - type: maintenance
+      notify: [ "statuspage" ]
+contacts:
+  - type: support
+    email: support@yourdomain.com
+  - type: bugbounty
+    url: "https://bugbounty.yourdomain.com"
+  - type: legal
+    email: legal@yourdomain.com
+announcements:
+  - title: "Planned Upgrade"
+    date: "2025-07-01"
+    url: "https://status.yourdomain.com/upgrades/20250701"

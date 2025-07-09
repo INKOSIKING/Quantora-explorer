@@ -1,0 +1,19 @@
+name: Internal API Deprecation & Cleanup
+
+on:
+  schedule:
+    - cron: "0 16 * * 0"
+
+jobs:
+  api-deprecation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scan for deprecated/internal APIs
+        run: python scripts/scan_api_deprecation.py --input openapi-internal.yaml --output deprecated_apis.json
+      - name: Remove or flag deprecated endpoints
+        run: python scripts/cleanup_deprecated_apis.py --input deprecated_apis.json
+      - name: Upload deprecation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-deprecation-report
+          path: deprecated_apis.json

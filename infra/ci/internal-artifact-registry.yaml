@@ -1,0 +1,17 @@
+name: Secure Internal Artifact Registry
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  artifact-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build internal artifact
+        run: python scripts/build_internal_artifact.py --src services/ --output artifact.tar.gz
+      - name: Sign artifact (internal key)
+        run: cosign sign-blob --key secrets/internal-sign.key --output-signature artifact.sig artifact.tar.gz
+      - name: Publish artifact (internal registry)
+        run: |
+          python scripts/publish_internal_artifact.py --artifact artifact.tar.gz --signature artifact.sig --registry ${{ secrets.INTERNAL_REGISTRY_URL }}

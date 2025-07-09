@@ -1,0 +1,20 @@
+name: Developer Laptop Trust Check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  device-posture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check OS compliance
+        run: |
+          python scripts/check_device_posture.py --users devs.yaml --output device_posture.json
+      - name: Quarantine non-compliant devices
+        run: |
+          python scripts/quarantine_devices.py --input device_posture.json
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: device-posture
+          path: device_posture.json

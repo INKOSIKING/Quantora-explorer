@@ -1,0 +1,28 @@
+name: Artifact Timestamped Attestation
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "services/**"
+      - "infra/**"
+
+jobs:
+  attest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build artifact
+        run: tar czf build.tar.gz services/
+      - name: Timestamp artifact (RFC3161)
+        run: |
+          openssl dgst -sha256 -binary build.tar.gz > build.sha256
+          curl -H "Content-Type: application/timestamp-query" --data-binary @build.sha256 https://tsa.quantora.com/tsa > build.tsr
+      - name: Attach attestation
+        run: |
+          cosign attest --key cosign.key --predicate build.tsr build.tar.gz
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: timestamped-attestation
+          path: build.tsr

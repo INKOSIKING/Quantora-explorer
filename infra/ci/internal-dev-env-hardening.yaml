@@ -1,0 +1,20 @@
+name: Internal Dev Environment Hardening
+
+on:
+  schedule:
+    - cron: "0 6 * * 0"
+
+jobs:
+  dev-env-hardening:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for insecure configs in dev envs
+        run: python scripts/check_dev_env.py --envs dev_environments/ --output dev_env_hardening.json
+      - name: Enforce secure baseline
+        run: python scripts/enforce_dev_env_baseline.py --input dev_env_hardening.json
+      - name: Upload hardening report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-env-hardening
+          path: dev_env_hardening.json

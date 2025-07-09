@@ -1,0 +1,22 @@
+name: Internal Data Loss Prevention (DLP)
+
+on:
+  push:
+    paths:
+      - "data/**"
+      - "logs/**"
+
+jobs:
+  internal-dlp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan for sensitive patterns in internal logs/data
+        run: python scripts/internal_dlp_scan.py --input data/ logs/ --output dlp_alerts.json
+      - name: Contextual alert/auto-quarantine
+        run: python scripts/dlp_contextual_response.py --input dlp_alerts.json
+      - name: Upload DLP alerts (internal only)
+        uses: actions/upload-artifact@v4
+        with:
+          name: internal-dlp-alerts
+          path: dlp_alerts.json

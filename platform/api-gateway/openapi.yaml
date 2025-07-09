@@ -1,0 +1,62 @@
+openapi: 3.0.0
+info:
+  title: Quantora API Gateway
+  version: 1.0.0
+servers:
+  - url: https://api.quantora.com
+paths:
+  /blocks:
+    get:
+      summary: Get recent blocks
+      responses:
+        '200':
+          description: OK
+  /block/{height}:
+    get:
+      summary: Get block by height
+      parameters:
+        - in: path
+          name: height
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: OK
+  /tx/{hash}:
+    get:
+      summary: Get transaction by hash
+      parameters:
+        - in: path
+          name: hash
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+  /orderbook:
+    get:
+      summary: Get the orderbook
+      responses:
+        '200':
+          description: OK
+  /wallet/send:
+    post:
+      summary: Send a transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                from:
+                  type: string
+                to:
+                  type: string
+                value:
+                  type: string
+      responses:
+        '200':
+          description: OK

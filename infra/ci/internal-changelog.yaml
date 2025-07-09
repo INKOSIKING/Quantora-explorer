@@ -1,0 +1,21 @@
+name: Automated Internal Changelog & Release Notes
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate internal changelog
+        run: python scripts/generate_internal_changelog.py --src services/ --output changelog.md
+      - name: Create release notes (internal only)
+        run: python scripts/generate_release_notes.py --changelog changelog.md --output release_notes.md
+      - name: Upload changelog and notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: internal-changelog
+          path: |
+            changelog.md
+            release_notes.md

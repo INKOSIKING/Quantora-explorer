@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies (Node.js)
+      run: |
+        npm install -g yarn
+        yarn install
+
+    - name: Install dependencies (Python)
+      run: pip install -r requirements.txt || true
+
+    - name: Build Rust
+      run: cargo build --workspace --all-features
+
+    - name: Build JS/TS Apps
+      run: yarn build
+
+    - name: Run Rust tests
+      run: cargo test --workspace --all-features
+
+    - name: Run JS/TS tests
+      run: yarn test
+
+    - name: Run Python tests
+      run: |
+        if [ -f tests/run_all.py ]; then
+          python tests/run_all.py
+        fi
+
+    - name: Archive production artifacts
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: |
+          dist/
+          build/
+          target/release/

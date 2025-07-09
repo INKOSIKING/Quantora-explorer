@@ -1,0 +1,320 @@
+
+use std::collections::HashMap;
+use std::sync::Arc;
+use tokio::sync::RwLock;
+use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LiquidityPool {
+    pub id: String,
+    pub token_a: String,
+    pub token_b: String,
+    pub reserve_a: u128,
+    pub reserve_b: u128,
+    pub total_shares: u128,
+    pub fee_rate: f64, // 0.3% = 0.003
+    pub liquidity_providers: HashMap<String, u128>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LendingPool {
+    pub asset: String,
+    pub total_supplied: u128,
+    pub total_borrowed: u128,
+    pub supply_rate: f64,
+    pub borrow_rate: f64,
+    pub utilization_rate: f64,
+    pub reserve_factor: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct YieldFarm {
+    pub id: String,
+    pub staking_token: String,
+    pub reward_token: String,
+    pub total_staked: u128,
+    pub reward_rate: u128, // rewards per second
+    pub start_time: u64,
+    pub end_time: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Vault {
+    pub id: String,
+    pub asset: String,
+    pub strategy: VaultStrategy,
+    pub total_assets: u128,
+    pub total_shares: u128,
+    pub performance_fee: f64,
+    pub management_fee: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum VaultStrategy {
+    AutoCompound,
+    YieldOptimization,
+    RiskMinimization,
+    ArbitrageCapture,
+}
+
+pub struct AdvancedDeFiEngine {
+    liquidity_pools: Arc<RwLock<HashMap<String, LiquidityPool>>>,
+    lending_pools: Arc<RwLock<HashMap<String, LendingPool>>>,
+    yield_farms: Arc<RwLock<HashMap<String, YieldFarm>>>,
+    vaults: Arc<RwLock<HashMap<String, Vault>>>,
+    price_oracle: Arc<PriceOracle>,
+    flash_loan_engine: Arc<FlashLoanEngine>,
+}
+
+impl AdvancedDeFiEngine {
+    pub fn new() -> Self {
+        Self {
+            liquidity_pools: Arc::new(RwLock::new(HashMap::new())),
+            lending_pools: Arc::new(RwLock::new(HashMap::new())),
+            yield_farms: Arc::new(RwLock::new(HashMap::new())),
+            vaults: Arc::new(RwLock::new(HashMap::new())),
+            price_oracle: Arc::new(PriceOracle::new()),
+            flash_loan_engine: Arc::new(FlashLoanEngine::new()),
+        }
+    }
+
+    pub async fn create_liquidity_pool(&self, token_a: String, token_b: String) -> Result<String, DeFiError> {
+        let pool_id = format!("{}-{}", token_a, token_b);
+        let pool = LiquidityPool {
+            id: pool_id.clone(),
+            token_a,
+            token_b,
+            reserve_a: 0,
+            reserve_b: 0,
+            total_shares: 0,
+            fee_rate: 0.003,
+            liquidity_providers: HashMap::new(),
+        };
+
+        self.liquidity_pools.write().await.insert(pool_id.clone(), pool);
+        Ok(pool_id)
+    }
+
+    pub async fn add_liquidity(&self, pool_id: &str, amount_a: u128, amount_b: u128, provider: String) -> Result<u128, DeFiError> {
+        let mut pools = self.liquidity_pools.write().await;
+        let pool = pools.get_mut(pool_id).ok_or(DeFiError::PoolNotFound)?;
+
+        let shares = if pool.total_shares == 0 {
+            (amount_a * amount_b).integer_sqrt()
+        } else {
+            std::cmp::min(
+                (amount_a * pool.total_shares) / pool.reserve_a,
+                (amount_b * pool.total_shares) / pool.reserve_b,
+            )
+        };
+
+        pool.reserve_a += amount_a;
+        pool.reserve_b += amount_b;
+        pool.total_shares += shares;
+        *pool.liquidity_providers.entry(provider).or_insert(0) += shares;
+
+        Ok(shares)
+    }
+
+    pub async fn swap(&self, pool_id: &str, input_token: &str, input_amount: u128) -> Result<u128, DeFiError> {
+        let mut pools = self.liquidity_pools.write().await;
+        let pool = pools.get_mut(pool_id).ok_or(DeFiError::PoolNotFound)?;
+
+        let (input_reserve, output_reserve) = if input_token == pool.token_a {
+            (pool.reserve_a, pool.reserve_b)
+        } else if input_token == pool.token_b {
+            (pool.reserve_b, pool.reserve_a)
+        } else {
+            return Err(DeFiError::InvalidToken);
+        };
+
+        // AMM formula: x * y = k (constant product)
+        let input_amount_with_fee = input_amount * (1000 - (pool.fee_rate * 1000.0) as u128) / 1000;
+        let output_amount = (output_reserve * input_amount_with_fee) / (input_reserve + input_amount_with_fee);
+
+        if input_token == pool.token_a {
+            pool.reserve_a += input_amount;
+            pool.reserve_b -= output_amount;
+        } else {
+            pool.reserve_b += input_amount;
+            pool.reserve_a -= output_amount;
+        }
+
+        Ok(output_amount)
+    }
+
+    pub async fn create_lending_pool(&self, asset: String) -> Result<String, DeFiError> {
+        let pool = LendingPool {
+            asset: asset.clone(),
+            total_supplied: 0,
+            total_borrowed: 0,
+            supply_rate: 0.05, // 5% APY
+            borrow_rate: 0.08, // 8% APY
+            utilization_rate: 0.0,
+            reserve_factor: 0.1, // 10%
+        };
+
+        self.lending_pools.write().await.insert(asset.clone(), pool);
+        Ok(asset)
+    }
+
+    pub async fn supply(&self, asset: &str, amount: u128, supplier: String) -> Result<u128, DeFiError> {
+        let mut pools = self.lending_pools.write().await;
+        let pool = pools.get_mut(asset).ok_or(DeFiError::PoolNotFound)?;
+
+        pool.total_supplied += amount;
+        self.update_rates(pool);
+
+        // Return interest-bearing tokens
+        Ok(amount) // Simplified - should calculate based on exchange rate
+    }
+
+    pub async fn borrow(&self, asset: &str, amount: u128, borrower: String) -> Result<(), DeFiError> {
+        let mut pools = self.lending_pools.write().await;
+        let pool = pools.get_mut(asset).ok_or(DeFiError::PoolNotFound)?;
+
+        if amount > pool.total_supplied - pool.total_borrowed {
+            return Err(DeFiError::InsufficientLiquidity);
+        }
+
+        pool.total_borrowed += amount;
+        self.update_rates(pool);
+
+        Ok(())
+    }
+
+    fn update_rates(&self, pool: &mut LendingPool) {
+        pool.utilization_rate = if pool.total_supplied == 0 {
+            0.0
+        } else {
+            pool.total_borrowed as f64 / pool.total_supplied as f64
+        };
+
+        // Interest rate model
+        pool.borrow_rate = 0.02 + (pool.utilization_rate * 0.15); // Base rate + utilization premium
+        pool.supply_rate = pool.borrow_rate * pool.utilization_rate * (1.0 - pool.reserve_factor);
+    }
+
+    pub async fn create_yield_farm(&self, staking_token: String, reward_token: String, reward_rate: u128, duration: u64) -> Result<String, DeFiError> {
+        let farm_id = format!("{}-{}", staking_token, reward_token);
+        let current_time = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+
+        let farm = YieldFarm {
+            id: farm_id.clone(),
+            staking_token,
+            reward_token,
+            total_staked: 0,
+            reward_rate,
+            start_time: current_time,
+            end_time: current_time + duration,
+        };
+
+        self.yield_farms.write().await.insert(farm_id.clone(), farm);
+        Ok(farm_id)
+    }
+
+    pub async fn execute_flash_loan(&self, asset: &str, amount: u128, callback_data: Vec<u8>) -> Result<(), DeFiError> {
+        self.flash_loan_engine.execute(asset, amount, callback_data).await
+    }
+
+    pub async fn get_tvl(&self) -> u128 {
+        let pools = self.liquidity_pools.read().await;
+        let lending_pools = self.lending_pools.read().await;
+        let vaults = self.vaults.read().await;
+
+        let mut total_tvl = 0u128;
+
+        // Calculate TVL from liquidity pools
+        for pool in pools.values() {
+            let price_a = self.price_oracle.get_price(&pool.token_a).await.unwrap_or(1.0);
+            let price_b = self.price_oracle.get_price(&pool.token_b).await.unwrap_or(1.0);
+            total_tvl += (pool.reserve_a as f64 * price_a) as u128;
+            total_tvl += (pool.reserve_b as f64 * price_b) as u128;
+        }
+
+        // Calculate TVL from lending pools
+        for pool in lending_pools.values() {
+            let price = self.price_oracle.get_price(&pool.asset).await.unwrap_or(1.0);
+            total_tvl += (pool.total_supplied as f64 * price) as u128;
+        }
+
+        // Calculate TVL from vaults
+        for vault in vaults.values() {
+            let price = self.price_oracle.get_price(&vault.asset).await.unwrap_or(1.0);
+            total_tvl += (vault.total_assets as f64 * price) as u128;
+        }
+
+        total_tvl
+    }
+}
+
+pub struct PriceOracle {
+    prices: Arc<RwLock<HashMap<String, f64>>>,
+}
+
+impl PriceOracle {
+    pub fn new() -> Self {
+        Self {
+            prices: Arc::new(RwLock::new(HashMap::new())),
+        }
+    }
+
+    pub async fn get_price(&self, asset: &str) -> Option<f64> {
+        self.prices.read().await.get(asset).copied()
+    }
+
+    pub async fn update_price(&self, asset: String, price: f64) {
+        self.prices.write().await.insert(asset, price);
+    }
+}
+
+pub struct FlashLoanEngine;
+
+impl FlashLoanEngine {
+    pub fn new() -> Self { Self }
+
+    pub async fn execute(&self, asset: &str, amount: u128, callback_data: Vec<u8>) -> Result<(), DeFiError> {
+        // Flash loan implementation
+        // 1. Lend the amount
+        // 2. Execute callback
+        // 3. Ensure repayment + fee
+        Ok(())
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum DeFiError {
+    #[error("Pool not found")]
+    PoolNotFound,
+    #[error("Invalid token")]
+    InvalidToken,
+    #[error("Insufficient liquidity")]
+    InsufficientLiquidity,
+    #[error("Slippage too high")]
+    SlippageTooHigh,
+    #[error("Flash loan not repaid")]
+    FlashLoanNotRepaid,
+}
+
+trait IntegerSqrt {
+    fn integer_sqrt(self) -> Self;
+}
+
+impl IntegerSqrt for u128 {
+    fn integer_sqrt(self) -> Self {
+        if self < 2 {
+            return self;
+        }
+        
+        let mut x = self;
+        let mut y = (self + 1) / 2;
+        while y < x {
+            x = y;
+            y = (x + self / x) / 2;
+        }
+        x
+    }
+}

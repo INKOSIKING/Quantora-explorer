@@ -1,0 +1,19 @@
+name: Cloud Permissions Minimization
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+
+jobs:
+  cloud-perm-min:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Analyze IAM permissions usage
+        run: python scripts/iam_usage_analysis.py --cloud aws --output iam_usage.json
+      - name: Generate least-privilege policy
+        run: python scripts/generate_least_privilege.py --input iam_usage.json --output min_policy.json
+      - name: Upload minimized policy
+        uses: actions/upload-artifact@v4
+        with:
+          name: min-iam-policy
+          path: min_policy.json

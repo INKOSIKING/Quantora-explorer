@@ -1,0 +1,18 @@
+name: Private Canary & Feature Flag Orchestration
+
+on:
+  workflow_dispatch:
+
+jobs:
+  canary-featureflags:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy canary release (internal)
+        run: python scripts/deploy_canary.py --feature_flag configs/feature_flags.yaml --output canary_report.json
+      - name: Monitor canary performance
+        run: python scripts/monitor_canary.py --input canary_report.json --output canary_analysis.json
+      - name: Upload canary analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: canary-analysis
+          path: canary_analysis.json

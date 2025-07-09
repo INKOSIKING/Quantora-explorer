@@ -1,0 +1,22 @@
+name: API Fuzzing & Chaos Testing
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+
+jobs:
+  api-fuzz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run API fuzzing
+        run: python scripts/api_fuzz.py --spec openapi.yaml --output fuzz_results.json
+      - name: Trigger API chaos scenarios
+        run: python scripts/api_chaos.py --spec openapi.yaml --output chaos_results.json
+      - name: Upload fuzz/chaos results
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-fuzz-chaos
+          path: |
+            fuzz_results.json
+            chaos_results.json

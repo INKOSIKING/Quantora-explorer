@@ -1,0 +1,19 @@
+name: Owner Attribution in Internal ML/AI Artifacts
+
+on:
+  push:
+    paths:
+      - "ml/**"
+      - "models/**"
+
+jobs:
+  ml-attribution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tag ML/AI artifacts with owner metadata
+        run: python scripts/tag_ml_artifacts.py --owner "Comfort Lindokuhle Mhaleni" --output ml_attribution_manifest.json
+      - name: Upload ML artifact attribution manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: ml-attribution-manifest
+          path: ml_attribution_manifest.json

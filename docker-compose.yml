@@ -1,0 +1,50 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: quantora
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: quantora_blockchain
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  blockchain-api:
+    build: ./blockchain/api
+    env_file: .env
+    depends_on:
+      - postgres
+    ports:
+      - "8001:8001"
+    networks:
+      - quantora
+
+  exchange:
+    build: ./exchange
+    env_file: .env
+    depends_on:
+      - postgres
+      - blockchain-api
+    ports:
+      - "8002:8002"
+    networks:
+      - quantora
+
+  indexer:
+    build: ./indexer
+    env_file: .env
+    depends_on:
+      - postgres
+      - blockchain-api
+    ports:
+      - "8003:8003"
+    networks:
+      - quantora
+
+networks:
+  quantora:
+
+volumes:
+  pgdata:

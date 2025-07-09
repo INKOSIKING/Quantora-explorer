@@ -1,0 +1,38 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Quantora Node Monitoring",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "Block Height",
+        "targets": [
+          {
+            "expr": "quantora_block_height",
+            "format": "time_series"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Peer Count",
+        "targets": [
+          {
+            "expr": "quantora_peer_count",
+            "format": "time_series"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "CPU Usage",
+        "targets": [
+          {
+            "expr": "process_cpu_seconds_total",
+            "format": "time_series"
+          }
+        ]
+      }
+    ]
+  }
+}

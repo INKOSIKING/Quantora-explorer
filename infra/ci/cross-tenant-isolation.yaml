@@ -1,0 +1,17 @@
+name: Cross-Tenant Data Isolation
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+
+jobs:
+  tenant-isolation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scan for cross-tenant data access
+        run: python scripts/tenant_isolation_scan.py --input data/ --output tenant_isolation.json
+      - name: Upload isolation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: tenant-isolation-report
+          path: tenant_isolation.json

@@ -1,0 +1,18 @@
+notifiers:
+  - name: pagerduty
+    type: pagerduty
+    api_key: "${PAGERDUTY_API_KEY}"
+    service_key: "${PAGERDUTY_SERVICE_KEY}"
+  - name: slack
+    type: slack
+    webhook_url: "${SLACK_WEBHOOK_URL}"
+rules:
+  - name: high-latency
+    condition: "latency_ms > 1000"
+    notify: ["pagerduty", "slack"]
+  - name: block-sync-lag
+    condition: "sync_lag > 3"
+    notify: ["slack"]
+  - name: api-error
+    condition: "error_rate > 0.05"
+    notify: ["pagerduty", "slack"]

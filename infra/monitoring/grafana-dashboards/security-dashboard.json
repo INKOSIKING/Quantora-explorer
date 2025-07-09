@@ -1,0 +1,28 @@
+{
+  "dashboard": {
+    "title": "Quantora Security Overview",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "API Error Rate",
+        "targets": [
+          { "expr": "sum(rate(http_requests_total{status=~'5..'}[5m])) by (service)", "format": "time_series" }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Blocked Requests",
+        "targets": [
+          { "expr": "sum(rate(api_gateway_blocked_requests_total[5m]))", "format": "time_series" }
+        ]
+      },
+      {
+        "type": "table",
+        "title": "Recent Security Alerts",
+        "targets": [
+          { "expr": "sort_desc(alerts{severity=~'critical|high'}, 10)", "format": "table" }
+        ]
+      }
+    ]
+  }
+}

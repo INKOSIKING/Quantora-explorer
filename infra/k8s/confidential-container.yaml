@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: confidential-api
+  namespace: quantora
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: confidential-api
+  template:
+    metadata:
+      labels:
+        app: confidential-api
+    spec:
+      containers:
+        - name: confidential-api
+          image: quantora/api:confidential
+          securityContext:
+            runAsNonRoot: true
+            capabilities:
+              drop: [ALL]
+          env:
+            - name: ENABLE_MEM_ENCRYPTION
+              value: "true"
+      nodeSelector:
+        azure.com/confidential-compute: "true"

@@ -1,0 +1,28 @@
+name: Pre-Merge Gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dir:
+          - services/ai
+          - services/quantorax
+          - services/marketplace
+          - services/blockchain/api-gateway
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: cd ${{ matrix.dir }} && npm ci
+      - run: cd ${{ matrix.dir }} && npm run lint
+      - run: cd ${{ matrix.dir }} && npm test -- --coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

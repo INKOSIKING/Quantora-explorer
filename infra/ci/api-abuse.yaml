@@ -1,0 +1,19 @@
+name: Real-Time API Abuse Detection
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+
+jobs:
+  api-abuse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Analyze API traffic for abuse
+        run: python scripts/api_abuse_detect.py --input logs/api.log --output api_abuse.json
+      - name: Notify incident response if abuse found
+        run: python scripts/notify_abuse.py --input api_abuse.json
+      - name: Upload abuse report
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-abuse-report
+          path: api_abuse.json

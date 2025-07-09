@@ -1,0 +1,19 @@
+name: Private Usage & Risk Analytics
+
+on:
+  schedule:
+    - cron: "0 11 * * *"
+
+jobs:
+  usage-risk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate platform usage data
+        run: python scripts/aggregate_usage.py --output usage.json
+      - name: Analyze risk based on usage
+        run: python scripts/analyze_risk_usage.py --usage usage.json --output usage_risk.json
+      - name: Upload usage/risk analytics
+        uses: actions/upload-artifact@v4
+        with:
+          name: usage-risk-analytics
+          path: usage_risk.json

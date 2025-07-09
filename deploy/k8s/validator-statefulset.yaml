@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: quantora-validator
+spec:
+  serviceName: "validator"
+  replicas: 5
+  selector:
+    matchLabels:
+      app: quantora-validator
+  template:
+    metadata:
+      labels:
+        app: quantora-validator
+    spec:
+      containers:
+      - name: quantora-node
+        image: ghcr.io/quantora/chain:mainnet-latest
+        command:
+        - /usr/local/bin/quantorad
+        args:
+        - --chain=/etc/quantora/genesis.json
+        - --validator
+        - --bootnodes=$(BOOTNODES)
+        - --rpc-port=8545
+        - --p2p-port=30303
+        - --telemetry-url=wss://telemetry.quantora.org/submit 1
+        env:
+        - name: BOOTNODES
+          valueFrom:
+            configMapKeyRef:
+              name: quantora-bootnodes
+              key: bootnodes
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/quantora
+        - name: genesis
+          mountPath: /etc/quantora
+      volumes:
+      - name: genesis
+        configMap:
+          name: quantora-genesis
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 20Gi

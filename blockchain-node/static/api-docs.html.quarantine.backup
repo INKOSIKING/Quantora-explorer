@@ -1,0 +1,571 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuanX Blockchain API Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .api-section {
+            background: white;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #667eea;
+            color: white;
+            padding: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .section-content {
+            padding: 30px;
+        }
+        
+        .endpoint {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .endpoint-method {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-right: 10px;
+        }
+        
+        .get { background: #28a745; color: white; }
+        .post { background: #007bff; color: white; }
+        .put { background: #ffc107; color: black; }
+        .delete { background: #dc3545; color: white; }
+        
+        .endpoint-url {
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: #495057;
+        }
+        
+        .endpoint-description {
+            margin: 10px 0;
+            color: #666;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .response-example {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .params-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .params-table th,
+        .params-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .params-table th {
+            background: #e9ecef;
+            font-weight: 600;
+        }
+        
+        .base-url {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .sdk-example {
+            background: #f0f8f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .nav-menu {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        
+        .nav-menu a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 QuanX Blockchain API</h1>
+            <p>Build the future on QuanX - Ultra-high TPS blockchain with multi-crypto support</p>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="#wallet">Wallet API</a>
+            <a href="#swap">Swap/DEX API</a>
+            <a href="#nft">NFT API</a>
+            <a href="#dapps">dApps API</a>
+            <a href="#tokens">Token Factory</a>
+            <a href="#explorer">Explorer API</a>
+            <a href="#websocket">WebSocket</a>
+        </div>
+        
+        <div class="base-url">
+            <strong>Base URL:</strong> <code>https://your-repl-name.replit.app/api</code><br>
+            <strong>Local Development:</strong> <code>http://localhost:3000/api</code>
+        </div>
+        
+        <!-- Wallet API -->
+        <div class="api-section" id="wallet">
+            <div class="section-header">💰 Wallet API</div>
+            <div class="section-content">
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method get">GET</span>
+                        <span class="endpoint-url">/wallet/create</span>
+                    </div>
+                    <div class="endpoint-description">Create a new QuanX wallet with BIP39 seed phrase</div>
+                    <div class="code-block">
+curl -X GET https://your-repl.replit.app/api/wallet/create
+                    </div>
+                    <div class="response-example">
+                        <strong>Response:</strong>
+                        <pre>{
+  "address": "QuanX1a2b3c4d5e6f7g8h9i0j",
+  "seed_phrase": "abandon ability able about above absent absorb abstract absurd abuse access accident",
+  "public_key": "0x1234567890abcdef...",
+  "private_key": "0xabcdef1234567890..."
+}</pre>
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method get">GET</span>
+                        <span class="endpoint-url">/wallet/{address}</span>
+                    </div>
+                    <div class="endpoint-description">Get wallet balance and information</div>
+                    <div class="code-block">
+curl -X GET https://your-repl.replit.app/api/wallet/QuanX1a2b3c4d5e6f7g8h9i0j
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method post">POST</span>
+                        <span class="endpoint-url">/wallet/transfer</span>
+                    </div>
+                    <div class="endpoint-description">Transfer QuanX tokens between addresses</div>
+                    <table class="params-table">
+                        <thead>
+                            <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>from</td><td>string</td><td>Sender address</td></tr>
+                            <tr><td>to</td><td>string</td><td>Recipient address</td></tr>
+                            <tr><td>amount</td><td>number</td><td>Amount to transfer</td></tr>
+                            <tr><td>private_key</td><td>string</td><td>Sender's private key</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Swap/DEX API -->
+        <div class="api-section" id="swap">
+            <div class="section-header">🔄 Swap/DEX API</div>
+            <div class="section-content">
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method get">GET</span>
+                        <span class="endpoint-url">/swap/pools</span>
+                    </div>
+                    <div class="endpoint-description">Get all available liquidity pools</div>
+                    <div class="code-block">
+curl -X GET https://your-repl.replit.app/api/swap/pools
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method post">POST</span>
+                        <span class="endpoint-url">/swap/quote</span>
+                    </div>
+                    <div class="endpoint-description">Get swap quote for token exchange</div>
+                    <table class="params-table">
+                        <thead>
+                            <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>token_in</td><td>string</td><td>Input token symbol</td></tr>
+                            <tr><td>token_out</td><td>string</td><td>Output token symbol</td></tr>
+                            <tr><td>amount_in</td><td>number</td><td>Input amount</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method post">POST</span>
+                        <span class="endpoint-url">/swap/execute</span>
+                    </div>
+                    <div class="endpoint-description">Execute token swap</div>
+                    <div class="code-block">
+{
+  "user_address": "QuanX1a2b3c4d5e6f7g8h9i0j",
+  "token_in": "QuanX",
+  "token_out": "USDT",
+  "amount_in": 1000,
+  "min_amount_out": 950
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- NFT API -->
+        <div class="api-section" id="nft">
+            <div class="section-header">🎨 NFT API</div>
+            <div class="section-content">
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method post">POST</span>
+                        <span class="endpoint-url">/nft/collections/create</span>
+                    </div>
+                    <div class="endpoint-description">Create a new NFT collection</div>
+                    <div class="code-block">
+{
+  "creator_address": "QuanX1a2b3c4d5e6f7g8h9i0j",
+  "name": "My Amazing Collection",
+  "symbol": "MAC",
+  "description": "A collection of unique digital art",
+  "banner_image": "https://example.com/banner.jpg",
+  "website": "https://myart.com"
+}
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method post">POST</span>
+                        <span class="endpoint-url">/nft/mint</span>
+                    </div>
+                    <div class="endpoint-description">Mint a new NFT</div>
+                    <table class="params-table">
+                        <thead>
+                            <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>collection_id</td><td>string</td><td>Collection ID (optional)</td></tr>
+                            <tr><td>creator_address</td><td>string</td><td>Creator's wallet address</td></tr>
+                            <tr><td>name</td><td>string</td><td>NFT name</td></tr>
+                            <tr><td>description</td><td>string</td><td>NFT description</td></tr>
+                            <tr><td>image_url</td><td>string</td><td>Image URL</td></tr>
+                            <tr><td>attributes</td><td>array</td><td>NFT attributes/traits</td></tr>
+                            <tr><td>royalty_percentage</td><td>number</td><td>Royalty % (0-10)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method get">GET</span>
+                        <span class="endpoint-url">/nft/marketplace</span>
+                    </div>
+                    <div class="endpoint-description">Get NFTs listed for sale</div>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method post">POST</span>
+                        <span class="endpoint-url">/nft/{token_id}/buy</span>
+                    </div>
+                    <div class="endpoint-description">Purchase an NFT</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- dApps API -->
+        <div class="api-section" id="dapps">
+            <div class="section-header">🚀 dApps API</div>
+            <div class="section-content">
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method get">GET</span>
+                        <span class="endpoint-url">/dapps</span>
+                    </div>
+                    <div class="endpoint-description">Get all deployed dApps</div>
+                    <div class="code-block">
+curl -X GET https://your-repl.replit.app/api/dapps?category=DeFi&limit=10
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method post">POST</span>
+                        <span class="endpoint-url">/dapps/deploy</span>
+                    </div>
+                    <div class="endpoint-description">Deploy a new dApp</div>
+                    <table class="params-table">
+                        <thead>
+                            <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>name</td><td>string</td><td>dApp name</td></tr>
+                            <tr><td>description</td><td>string</td><td>dApp description</td></tr>
+                            <tr><td>creator_address</td><td>string</td><td>Creator's address</td></tr>
+                            <tr><td>contract_code</td><td>string</td><td>Smart contract code</td></tr>
+                            <tr><td>category</td><td>string</td><td>DeFi, Gaming, NFT, etc.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method get">GET</span>
+                        <span class="endpoint-url">/dapps/{id}/stats</span>
+                    </div>
+                    <div class="endpoint-description">Get dApp usage statistics</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Token Factory -->
+        <div class="api-section" id="tokens">
+            <div class="section-header">🪙 Token Factory API</div>
+            <div class="section-content">
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method post">POST</span>
+                        <span class="endpoint-url">/tokens/create</span>
+                    </div>
+                    <div class="endpoint-description">Create a new token on QuanX blockchain</div>
+                    <div class="code-block">
+{
+  "symbol": "MYTOKEN",
+  "name": "My Custom Token",
+  "total_supply": 1000000,
+  "decimals": 18,
+  "creator_address": "QuanX1a2b3c4d5e6f7g8h9i0j",
+  "metadata": {
+    "description": "A revolutionary token",
+    "website": "https://mytoken.com"
+  }
+}
+                    </div>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method get">GET</span>
+                        <span class="endpoint-url">/tokens</span>
+                    </div>
+                    <div class="endpoint-description">Get all created tokens</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Explorer API -->
+        <div class="api-section" id="explorer">
+            <div class="section-header">🔍 Explorer API</div>
+            <div class="section-content">
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method get">GET</span>
+                        <span class="endpoint-url">/explorer/stats</span>
+                    </div>
+                    <div class="endpoint-description">Get blockchain statistics</div>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method get">GET</span>
+                        <span class="endpoint-url">/explorer/blocks</span>
+                    </div>
+                    <div class="endpoint-description">Get latest blocks</div>
+                </div>
+                
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method get">GET</span>
+                        <span class="endpoint-url">/explorer/transactions/{address}</span>
+                    </div>
+                    <div class="endpoint-description">Get transactions for an address</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- WebSocket -->
+        <div class="api-section" id="websocket">
+            <div class="section-header">🔌 WebSocket API</div>
+            <div class="section-content">
+                <div class="endpoint">
+                    <div>
+                        <span class="endpoint-method get">WS</span>
+                        <span class="endpoint-url">/ws</span>
+                    </div>
+                    <div class="endpoint-description">Real-time blockchain events</div>
+                    <div class="code-block">
+const ws = new WebSocket('wss://your-repl.replit.app/ws');
+
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    console.log('New block:', data);
+};
+
+// Subscribe to events
+ws.send(JSON.stringify({
+    type: 'subscribe',
+    events: ['new_block', 'new_transaction', 'nft_mint']
+}));
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SDK Examples -->
+        <div class="api-section">
+            <div class="section-header">📚 SDK Examples</div>
+            <div class="section-content">
+                <div class="sdk-example">
+                    <h3>JavaScript SDK</h3>
+                    <div class="code-block">
+// Install: npm install quantx-sdk
+import { QuanXSDK } from 'quantx-sdk';
+
+const quantx = new QuanXSDK('https://your-repl.replit.app/api');
+
+// Create wallet
+const wallet = await quantx.wallet.create();
+
+// Check balance
+const balance = await quantx.wallet.getBalance(wallet.address);
+
+// Swap tokens
+const swap = await quantx.swap.execute({
+    userAddress: wallet.address,
+    tokenIn: 'QuanX',
+    tokenOut: 'USDT',
+    amountIn: 1000,
+    minAmountOut: 950
+});
+
+// Mint NFT
+const nft = await quantx.nft.mint({
+    creatorAddress: wallet.address,
+    name: 'My NFT',
+    description: 'A unique digital asset',
+    imageUrl: 'https://example.com/image.jpg',
+    royaltyPercentage: 5.0
+});
+                    </div>
+                </div>
+                
+                <div class="sdk-example">
+                    <h3>Python SDK</h3>
+                    <div class="code-block">
+# Install: pip install quantx-python
+from quantx import QuanXClient
+
+client = QuanXClient('https://your-repl.replit.app/api')
+
+# Create wallet
+wallet = client.wallet.create()
+
+# Deploy dApp
+dapp = client.dapps.deploy({
+    'name': 'My DeFi App',
+    'description': 'Revolutionary DeFi protocol',
+    'creator_address': wallet['address'],
+    'contract_code': open('contract.sol').read(),
+    'category': 'DeFi'
+})
+
+# Create liquidity pool
+pool = client.swap.create_pool('MYTOKEN', 'QuanX', 100000, 50000)
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; color: white; margin-top: 50px;">
+            <h2>🚀 Start Building on QuanX!</h2>
+            <p>Join our developer community and build the next generation of dApps</p>
+            <br>
+            <a href="https://discord.gg/quantx" style="color: #64b5f6; text-decoration: none;">Discord</a> | 
+            <a href="https://github.com/quantx/blockchain" style="color: #64b5f6; text-decoration: none;">GitHub</a> | 
+            <a href="https://docs.quantx.io" style="color: #64b5f6; text-decoration: none;">Documentation</a>
+        </div>
+    </div>
+</body>
+</html>

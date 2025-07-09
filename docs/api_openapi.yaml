@@ -1,0 +1,95 @@
+openapi: 3.0.0
+info:
+  title: Quantora Chain Node API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8545
+paths:
+  /:
+    post:
+      summary: JSON-RPC endpoint
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                jsonrpc:
+                  type: string
+                  example: "2.0"
+                method:
+                  type: string
+                params:
+                  type: array
+                id:
+                  type: integer
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jsonrpc:
+                    type: string
+                    example: "2.0"
+                  result:
+                    type: object
+                  error:
+                    type: object
+                  id:
+                    type: integer
+components:
+  schemas:
+    Block:
+      type: object
+      properties:
+        header:
+          $ref: '#/components/schemas/BlockHeader'
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+    BlockHeader:
+      type: object
+      properties:
+        parent_hash:
+          type: string
+        timestamp:
+          type: integer
+        miner:
+          type: string
+        nonce:
+          type: integer
+    Transaction:
+      type: object
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        value:
+          type: integer
+        nonce:
+          type: integer
+        signature:
+          type: string
+        data:
+          type: string
+    PeerInfo:
+      type: object
+      properties:
+        address:
+          type: string
+    StatusInfo:
+      type: object
+      properties:
+        version:
+          type: string
+        peer_count:
+          type: integer
+        latest_block:
+          $ref: '#/components/schemas/BlockHeader'
+        syncing:
+          type: boolean

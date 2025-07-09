@@ -1,0 +1,17 @@
+groups:
+- name: explorer
+  rules:
+  - alert: SyncLag
+    expr: explorer_block_sync_lag > 3
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Explorer node is lagging behind chain head."
+  - alert: ErrorSpike
+    expr: sum(rate(http_requests_total{status!=\"200\"}[1m])) > 2
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "API error rate spike detected."

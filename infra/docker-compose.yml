@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  quantora-node:
+    build: ../quantora-chain/blockchain-node
+    ports: ["9944:9944", "9933:9933"]
+    environment: [CHAIN_ID=quantora-mainnet]
+  explorer-api:
+    build: ../quantora-chain/explorer-api
+    ports: ["8080:8080"]
+  explorer-frontend:
+    build: ../quantora-chain/explorer-frontend
+    ports: ["3000:3000"]
+  trading-ui:
+    build: ../quantora-chain/trading-ui
+    ports: ["3001:3001"]
+  api-gateway:
+    build: ../platform/api-gateway
+    ports: ["4000:4000"]
+  qvault-wallet:
+    build: ../quantora-chain/qvault-wallet/web
+    ports: ["3100:80"]
+  db:
+    image: postgres:15
+    environment: [POSTGRES_USER=quantora, POSTGRES_PASSWORD=quantora, POSTGRES_DB=quantora]
+    ports: ["5432:5432"]

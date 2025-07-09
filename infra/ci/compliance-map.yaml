@@ -1,0 +1,20 @@
+name: Compliance Evidence Mapping
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * 0" # Weekly
+
+jobs:
+  compliance-map:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate evidence map
+        run: |
+          python scripts/compliance_map.py --controls docs/compliance/matrix.md --evidence ./infra/ci/reports/ --output compliance_evidence_map.json
+      - name: Upload evidence map
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-evidence-map
+          path: compliance_evidence_map.json

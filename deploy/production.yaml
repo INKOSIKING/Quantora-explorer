@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quantora
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: quantora
+  template:
+    metadata:
+      labels:
+        app: quantora
+    spec:
+      containers:
+      - name: quantora
+        image: yourrepo/quantora:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ETH_RPC
+          value: "https://mainnet.infura.io/v3/YOUR_KEY"
+        - name: ETH_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: eth-secrets
+              key: ETH_PRIVATE_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quantora
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: quantora

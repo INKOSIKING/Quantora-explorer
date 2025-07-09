@@ -1,0 +1,19 @@
+name: Advanced UEBA Analytics
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+
+jobs:
+  ueba:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate user/entity events
+        run: python scripts/ueba_aggregate.py --input logs/events.log --output ueba_events.json
+      - name: Model/analyze behavioral risk
+        run: python scripts/ueba_model.py --input ueba_events.json --output ueba_risk.json
+      - name: Upload UEBA risk report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ueba-risk-report
+          path: ueba_risk.json

@@ -1,0 +1,18 @@
+name: Sovereign Cloud Controls
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sovereign-cloud:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate region residency compliance
+        run: python scripts/check_region_compliance.py --regions eu,de,fr --output region_report.json
+      - name: Enforce data export restrictions
+        run: python scripts/enforce_sovereign_export.py --input region_report.json
+      - name: Upload region compliance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: region-compliance
+          path: region_report.json

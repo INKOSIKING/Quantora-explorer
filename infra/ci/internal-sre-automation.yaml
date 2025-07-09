@@ -1,0 +1,17 @@
+name: Internal SRE/Ops Automation
+
+on:
+  schedule:
+    - cron: "0 15 * * *"
+
+jobs:
+  sre-ops:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run internal SRE playbooks
+        run: python scripts/run_internal_sre_playbooks.py --scope all --output sre_ops.json
+      - name: Upload SRE ops report
+        uses: actions/upload-artifact@v4
+        with:
+          name: sre-ops-report
+          path: sre_ops.json

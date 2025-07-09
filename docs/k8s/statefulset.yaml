@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: quantora-node
+spec:
+  serviceName: "quantora"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: quantora-node
+  template:
+    metadata:
+      labels:
+        app: quantora-node
+    spec:
+      containers:
+        - name: quantora-node
+          image: quantora-node:latest
+          args:
+            - "--config"
+            - "/data/node-config.toml"
+          ports:
+            - containerPort: 30303
+            - containerPort: 8545
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: quantora-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: quantora-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi

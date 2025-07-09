@@ -1,0 +1,17 @@
+name: Customer Data Access Report
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  access-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate customer data access
+        run: python scripts/customer_access.py --input logs/access.log --output access_report.json
+      - name: Upload access report
+        uses: actions/upload-artifact@v4
+        with:
+          name: customer-access-report
+          path: access_report.json

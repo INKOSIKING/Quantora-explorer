@@ -1,0 +1,26 @@
+name: Threat Intel Feed Integration
+
+on:
+  schedule:
+    - cron: "0 * * * *" # Hourly
+
+jobs:
+  threat-intel-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull latest threat feeds
+        run: |
+          curl -o feeds.json https://threatfeeds.quantora.com/current
+      - name: Check for relevant CVEs
+        run: |
+          python scripts/check_threat_feeds.py feeds.json
+      - name: Notify Security Team
+        if: failure()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "🚨 New actionable threat detected in threat intelligence feed. Review required."
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

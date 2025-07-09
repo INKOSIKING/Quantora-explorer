@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kured
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: kured
+  template:
+    metadata:
+      labels:
+        app: kured
+    spec:
+      containers:
+        - name: kured
+          image: ghcr.io/weaveworks/kured:1.13.3
+          securityContext:
+            privileged: true
+          env:
+            - name: KURED_NODE_LABEL
+              value: "kured=true"
+          volumeMounts:
+            - name: dbus
+              mountPath: /var/run/dbus
+            - name: kured-run
+              mountPath: /run/kured
+      volumes:
+        - name: dbus
+          hostPath:
+            path: /var/run/dbus
+        - name: kured-run
+          hostPath:
+            path: /run/kured

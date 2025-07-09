@@ -1,0 +1,101 @@
+# --- Rust ---
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# --- Node/React ---
+node_modules/
+dist/
+build/
+.npm/
+*.log
+yarn.lock
+package-lock.json
+
+# --- Env/Secrets ---
+.env
+.env.*
+!.env.example
+*.secret*
+*.key
+*.pem
+*.crt
+
+# --- Editor/IDE ---
+*.swp
+*.swo
+*.tmp
+*.bak
+*.DS_Store
+.idea/
+.vscode/
+*.code-workspace
+
+# --- OS ---
+Thumbs.db
+ehthumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+._.Trashes
+
+# --- Docker ---
+docker-compose.override.yml
+docker-compose.local.yml
+*.tar
+
+# --- Python (for scripts/tools) ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+
+# --- Logs ---
+/logs/
+*.log
+*.out
+
+# --- Coverage ---
+/coverage/
+*.lcov
+
+# --- Test Output ---
+/test-results/
+junit.xml
+lcov-report/
+
+# --- Build System ---
+/build/
+.cache/
+.cache-loader/
+tmp/
+temp/
+*.tmp.*
+*.temp.*
+
+# --- Misc ---
+*.sublime-workspace
+*.sublime-project
+*.iml
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Frontend ---
+/public/static/
+*.map
+
+# --- Quantora Custom ---
+/secrets/
+quantora.db
+quantora.sqlite
+quantora.log
+*.rlib
+
+# --- CI/CD Artifacts ---
+/artifacts/
+/ci-logs/

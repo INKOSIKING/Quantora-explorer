@@ -1,0 +1,17 @@
+name: Internal Provenance with Owner Attribution
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tag all artifacts with owner metadata
+        run: python scripts/tag_artifacts_with_owner.py --owner "Comfort Lindokuhle Mhaleni" --country "South Africa" --src artifacts/ --output provenance_manifest.json
+      - name: Upload provenance manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: provenance-manifest
+          path: provenance_manifest.json

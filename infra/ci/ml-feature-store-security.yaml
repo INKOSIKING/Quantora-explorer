@@ -1,0 +1,21 @@
+name: ML Feature Store Security
+
+on:
+  push:
+    paths:
+      - "ml/feature_store/**"
+
+jobs:
+  feature-store-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan features for PII/excessive data
+        run: python scripts/feature_store_dlp.py --src ml/feature_store/ --output feature_dlp.json
+      - name: Enforce feature access policy
+        run: python scripts/enforce_feature_policy.py --input feature_dlp.json
+      - name: Upload feature DLP report
+        uses: actions/upload-artifact@v4
+        with:
+          name: feature-dlp-report
+          path: feature_dlp.json

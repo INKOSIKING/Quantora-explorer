@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  exchange-backend:
+    build: ./exchange
+    environment:
+      - NODE_API_URL=http://blockchain-node:9944
+    depends_on:
+      - blockchain-node
+      - db
+
+  blockchain-node:
+    image: quantora/node:latest
+    ports:
+      - "9944:9944"
+    volumes:
+      - ./data:/data
+
+  explorer:
+    build: ./explorer
+    environment:
+      - NODE_API_URL=http://blockchain-node:9944
+    depends_on:
+      - blockchain-node
+
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=quantora
+      - POSTGRES_PASSWORD=quantora_pass
+      - POSTGRES_DB=quantora
+    volumes:
+      - ./db:/var/lib/postgresql/data

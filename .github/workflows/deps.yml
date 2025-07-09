@@ -1,0 +1,23 @@
+name: Dependency Update
+on:
+  schedule:
+    - cron: '0 5 * * 1'
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update Rust deps
+        run: cargo update
+      - name: Update npm deps
+        run: npm update
+      - name: Audit Rust
+        run: cargo audit
+      - name: Audit npm
+        run: npm audit --audit-level=high
+      - name: Open PR
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: update dependencies"
+          title: "chore: update dependencies"
+          body: "Automated dependency update"

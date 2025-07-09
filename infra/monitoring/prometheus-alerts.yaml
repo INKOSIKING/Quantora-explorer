@@ -1,0 +1,19 @@
+groups:
+- name: quantora-platform
+  rules:
+    - alert: HighErrorRate
+      expr: sum(rate(http_requests_total{status=~"5.."}[5m])) by (service) > 0.05
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High error rate detected for {{ $labels.service }}"
+        description: "More than 5% errors in the last 5 minutes."
+    - alert: PodRestartingTooOften
+      expr: sum(rate(kube_pod_container_status_restarts_total[10m])) by (pod) > 3
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Pod restarting too often {{ $labels.pod }}"
+        description: "Pod {{ $labels.pod }} restarted more than 3 times in 10m."

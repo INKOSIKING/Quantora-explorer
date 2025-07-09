@@ -1,0 +1,21 @@
+name: Disaster Recovery Drill
+
+on:
+  workflow_dispatch:
+
+jobs:
+  dr-drill:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Simulate Region Failure
+        run: |
+          kubectl scale deployment --all --replicas=0 -n quantora
+          sleep 60
+          kubectl scale deployment --all --replicas=3 -n quantora
+      - name: Restore from Backup
+        run: |
+          velero restore create --from-backup quantora-daily
+      - name: Health Check
+        run: |
+          kubectl get pods -A
+          curl -fsSL https://quantora.com/healthz

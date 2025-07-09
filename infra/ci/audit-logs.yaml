@@ -1,0 +1,19 @@
+name: Audit Logging
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  audit-logs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Grep for direct DB access
+        run: |
+          grep -r --include=*.ts "db.query" ./services/ | tee db_audit.log
+      - name: Archive audit log
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-audit-log
+          path: db_audit.log

@@ -1,0 +1,24 @@
+name: Attack Surface Mapping
+
+on:
+  schedule:
+    - cron: "0 0 * * 7"
+
+jobs:
+  map-surface:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run amass for subdomain discovery
+        run: |
+          amass enum -d quantora.com -o subdomains.txt
+      - name: Run Nuclei for exposed services
+        uses: projectdiscovery/nuclei-action@main
+        with:
+          target: subdomains.txt
+          templates: "cves,exposures"
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: attack-surface-report
+          path: subdomains.txt

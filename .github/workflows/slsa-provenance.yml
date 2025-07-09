@@ -1,0 +1,26 @@
+name: SLSA Provenance Attestation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate SLSA provenance
+        uses: slsa-framework/slsa-github-generator@v1.7.0
+        with:
+          attestation-type: provenance
+      - name: Upload Provenance
+        uses: actions/upload-artifact@v4
+        with:
+          name: provenance
+          path: provenance.json

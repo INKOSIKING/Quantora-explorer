@@ -1,0 +1,21 @@
+name: Egress Anomaly Detection
+
+on:
+  schedule:
+    - cron: "*/15 * * * *" # Every 15 minutes
+
+jobs:
+  egress-anomaly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect egress flow logs
+        run: python scripts/collect_egress_logs.py --output egress.log
+      - name: Detect anomalies
+        run: python scripts/detect_egress_anomaly.py --input egress.log --output egress_anomaly.json
+      - name: Notify SecOps if anomaly found
+        run: python scripts/notify_anomaly.py --input egress_anomaly.json
+      - name: Upload anomaly report
+        uses: actions/upload-artifact@v4
+        with:
+          name: egress-anomaly-report
+          path: egress_anomaly.json

@@ -1,0 +1,23 @@
+name: API Contract Fuzzing
+
+on:
+  schedule:
+    - cron: "0 5 * * 0" # Weekly
+
+jobs:
+  fuzz-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Schemathesis Fuzzing
+        uses: schemathesis/action@v1
+        with:
+          schema: "https://quantora.com/openapi.yaml"
+          base-url: "https://quantora.com"
+          checks: "all"
+          report-path: "schemathesis-report.html"
+      - name: Upload fuzz report
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-fuzz-report
+          path: schemathesis-report.html

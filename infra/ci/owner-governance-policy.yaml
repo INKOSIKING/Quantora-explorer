@@ -1,0 +1,19 @@
+name: Owner-Attested Governance Policy Automation
+
+on:
+  schedule:
+    - cron: "0 8 * * *"
+
+jobs:
+  governance-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate governance compliance
+        run: python scripts/check_governance_policy.py --config configs/governance.yaml --owner "Comfort Lindokuhle Mhaleni" --output governance_report.json
+      - name: Owner digital signature
+        run: python scripts/sign_report.py --input governance_report.json --owner "Comfort Lindokuhle Mhaleni" --country "South Africa" --output signed_governance_report.json
+      - name: Upload signed governance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-governance-report
+          path: signed_governance_report.json

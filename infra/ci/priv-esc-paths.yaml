@@ -1,0 +1,19 @@
+name: Privilege Escalation Path Detection
+
+on:
+  schedule:
+    - cron: "0 7 * * 1" # Weekly
+
+jobs:
+  priv-esc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Analyze IAM & RBAC for privilege escalation
+        run: |
+          python scripts/analyze_priv_esc.py --aws --k8s --output priv_esc_report.json
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: priv-esc-report
+          path: priv_esc_report.json

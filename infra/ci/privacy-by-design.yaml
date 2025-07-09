@@ -1,0 +1,21 @@
+name: Privacy by Design Enforcement
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  privacy-enforcement:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check code for privacy annotations
+        run: python scripts/privacy_check.py --src services/ --output privacy_report.json
+      - name: Block merge on privacy violations
+        run: |
+          if grep -q "PRIVACY_VIOLATION" privacy_report.json; then exit 1; fi
+      - name: Upload privacy report
+        uses: actions/upload-artifact@v4
+        with:
+          name: privacy-report
+          path: privacy_report.json

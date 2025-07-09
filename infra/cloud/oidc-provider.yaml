@@ -1,0 +1,19 @@
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMWorkloadIdentityPool
+metadata:
+  name: quantora-wip
+spec:
+  displayName: "Quantora Pool"
+  description: "Federated identity for workloads"
+---
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMWorkloadIdentityPoolProvider
+metadata:
+  name: quantora-provider
+spec:
+  workloadIdentityPoolRef:
+    name: quantora-wip
+  oidc:
+    issuerUri: https://github.com/quantora
+    allowedAudiences:
+      - "quantora-platform"

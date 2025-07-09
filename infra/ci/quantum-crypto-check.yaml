@@ -1,0 +1,22 @@
+name: Quantum-Safe Crypto Readiness
+
+on:
+  schedule:
+    - cron: "0 2 * * 0" # Weekly
+
+jobs:
+  pqc-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for quantum-safe algorithms
+        run: |
+          grep -rE "ecdsa|rsa|sha1|sha2" ./services/ | tee classical_crypto.log
+          grep -rE "kyber|dilithium|falcon|sphincs" ./services/ | tee pqc_crypto.log
+      - name: Upload scan logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: quantum-crypto-scan
+          path: |
+            classical_crypto.log
+            pqc_crypto.log

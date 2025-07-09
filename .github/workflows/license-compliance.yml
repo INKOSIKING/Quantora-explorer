@@ -1,0 +1,21 @@
+name: License Compliance
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  license-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan dependencies for license compliance
+        uses: pilosus/action-pip-license-checker@v2.2.1
+        with:
+          requirements: "requirements.txt"
+          fail_on: "GPL,LGPL,AGPL"
+      - name: Check JS licenses
+        run: |
+          npx license-checker --production --onlyAllow="MIT;Apache-2.0;BSD-3-Clause"

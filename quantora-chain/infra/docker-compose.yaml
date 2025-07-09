@@ -1,0 +1,53 @@
+version: '3.8'
+services:
+  node:
+    image: quantora/node:latest
+    ports:
+      - "30303:30303"
+      - "9944:9944"
+    volumes:
+      - ./data:/data
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+
+  explorer-api:
+    image: quantora/explorer-api:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - node
+    environment:
+      - DATABASE_URL=sqlite:///data/explorer.db
+    volumes:
+      - ./data:/data
+
+  explorer-frontend:
+    image: quantora/explorer-frontend:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - explorer-api
+
+  oracle:
+    image: quantora/oracle-service:latest
+    restart: unless-stopped
+
+  trading-ui:
+    image: quantora/trading-ui:latest
+    ports:
+      - "4000:4000"
+    depends_on:
+      - node
+
+  vault-wallet-web:
+    image: quantora/qvault-wallet-web:latest
+    ports:
+      - "7000:7000"
+    depends_on:
+      - node
+
+  vault-wallet-mobile:
+    image: quantora/qvault-wallet-mobile:latest
+    depends_on:
+      - node

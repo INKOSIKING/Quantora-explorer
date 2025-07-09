@@ -1,0 +1,17 @@
+name: Workload Identity Mapping
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"
+
+jobs:
+  workload-identity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Map pods/services to identities
+        run: python scripts/map_workload_identity.py --k8s --output workload_identity.json
+      - name: Upload identity mapping
+        uses: actions/upload-artifact@v4
+        with:
+          name: workload-identity
+          path: workload_identity.json

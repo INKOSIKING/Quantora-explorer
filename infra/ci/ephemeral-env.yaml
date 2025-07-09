@@ -1,0 +1,32 @@
+name: Ephemeral Environment Management
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  ephemeral-env:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create ephemeral environment
+        uses: cloudposse/github-action-ecs-run-task@v2
+        with:
+          cluster: quantora-pr-envs
+          task-definition: pr-task-def
+          count: 1
+      - name: Post environment link to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "🔒 Ephemeral environment ready for testing. Access: https://env-${{ github.sha }}.quantora.com"
+            })
+      - name: Destroy ephemeral environment (cleanup)
+        if: github.event.action == 'closed'
+        uses: cloudposse/github-action-ecs-stop-task@v2
+        with:
+          cluster: quantora-pr-envs

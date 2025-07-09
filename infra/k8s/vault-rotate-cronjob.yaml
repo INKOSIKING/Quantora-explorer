@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: vault-secret-rotator
+  namespace: quantora
+spec:
+  schedule: "0 */6 * * *" # Every 6 hours
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: quantora-app
+          containers:
+            - name: rotator
+              image: hashicorp/vault:1.14.0
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  vault login $VAULT_TOKEN
+                  vault write -f sys/leases/renew
+                  vault write -f sys/leases/revoke
+                  vault write -f secret/rotate/quantora/db
+              env:
+                - name: VAULT_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: vault-token
+                      key: token
+          restartPolicy: OnFailure

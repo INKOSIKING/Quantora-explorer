@@ -1,0 +1,21 @@
+name: Adaptive Risk-Based Authentication
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+
+jobs:
+  risk-auth:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate login context signals
+        run: python scripts/collect_auth_signals.py --output auth_signals.json
+      - name: Evaluate risk
+        run: python scripts/evaluate_auth_risk.py --input auth_signals.json --output auth_risk.json
+      - name: Trigger step-up authentication if required
+        run: python scripts/step_up_auth.py --input auth_risk.json
+      - name: Upload risk report
+        uses: actions/upload-artifact@v4
+        with:
+          name: auth-risk-report
+          path: auth_risk.json

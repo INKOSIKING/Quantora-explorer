@@ -1,0 +1,22 @@
+apiVersion: functions.gcp.crossplane.io/v1beta1
+kind: Function
+metadata:
+  name: quantora-pq-fn
+spec:
+  location: us-central1
+  runtime: python310
+  entryPoint: pq_handler
+  sourceArchiveBucket: quantora-functions
+  sourceArchiveObject: quantora-pq-fn-v1.zip
+  environmentVariables:
+    PQC_MODE: "enabled"
+  ingressSettings: ALLOW_INTERNAL_ONLY
+  vpcConnector: quantora-vpc
+  serviceAccountName: quantora-fn-sa@quantora.iam.gserviceaccount.com
+  maxInstances: 3
+  labels:
+    security: "quantum-safe"
+  secretEnvironmentVariables:
+    - key: PQC_PRIVATE_KEY
+      secret: pqc-keys
+      version: 1

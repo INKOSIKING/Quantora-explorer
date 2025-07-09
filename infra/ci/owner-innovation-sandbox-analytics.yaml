@@ -1,0 +1,19 @@
+name: Owner-Only Innovation Sandbox Analytics
+
+on:
+  schedule:
+    - cron: "0 18 * * 3"
+
+jobs:
+  innovation-sandbox-analytics:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Analyze R&D sandbox usage and outcomes
+        run: python scripts/analyze_innovation_sandbox.py --owner "Comfort Lindokuhle Mhaleni" --output sandbox_analytics.json
+      - name: Owner review and approval
+        run: python scripts/owner_sign_sandbox_analytics.py --input sandbox_analytics.json --owner "Comfort Lindokuhle Mhaleni" --output signed_sandbox_analytics.json
+      - name: Upload signed sandbox analytics
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-sandbox-analytics
+          path: signed_sandbox_analytics.json

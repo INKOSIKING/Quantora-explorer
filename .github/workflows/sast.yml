@@ -1,0 +1,99 @@
+name: Static Application Security Testing (SAST)
+
+on:
+  push:
+    branches: [ main, develop, staging, production ]
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.png'
+      - '**/*.jpg'
+      - '**/*.svg'
+      - 'docs/**'
+      - '**/README*'
+  pull_request:
+    branches: [ main, develop, staging, production ]
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.png'
+      - '**/*.jpg'
+      - '**/*.svg'
+      - 'docs/**'
+      - '**/README*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  sast:
+    name: Run Free SAST Scanners
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        language: [ 'javascript', 'typescript', 'python', 'rust', 'go', 'java', 'swift' ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up language tools
+        run: |
+          case "${{ matrix.language }}" in
+            javascript|typescript)
+              sudo apt-get install -y npm
+              ;;
+            python)
+              sudo apt-get install -y python3-pip
+              ;;
+            rust)
+              curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+              ;;
+            go)
+              sudo apt-get install -y golang
+              ;;
+            java)
+              sudo apt-get install -y openjdk-21-jdk
+              ;;
+            swift)
+              echo "Swift setup not available on ubuntu-latest"
+              ;;
+          esac
+
+      # --- Semgrep SAST ---
+      - name: Run Semgrep (Free SAST)
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/ci
+            p/security-audit
+            p/secrets
+        continue-on-error: true
+
+      # --- Optional Python SAST ---
+      - name: Run Bandit
+        if: matrix.language == 'python'
+        run: |
+          pip install bandit
+          bandit -r . || true
+
+      # --- Optional Rust SAST ---
+      - name: Run cargo-audit
+        if: matrix.language == 'rust'
+        run: |
+          cargo install --locked cargo-audit || true
+          cargo audit || true
+
+      # --- Optional Go SAST ---
+      - name: Run Gosec
+        if: matrix.language == 'go'
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          gosec ./... || true
+
+      # --- Optional Secrets Scan ---
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@v3
+        with:
+          scanArguments: .

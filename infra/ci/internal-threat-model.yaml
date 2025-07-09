@@ -1,0 +1,19 @@
+name: Automated Private Threat Modeling
+
+on:
+  push:
+    paths:
+      - "services/**"
+      - "infra/**"
+
+jobs:
+  threat-model:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate/Update threat model
+        run: python scripts/generate_threat_model.py --src services/ --output threat_model.json
+      - name: Upload threat model artifact (internal)
+        uses: actions/upload-artifact@v4
+        with:
+          name: threat-model
+          path: threat_model.json

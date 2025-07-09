@@ -1,0 +1,13 @@
+{
+  "system": { "code": "0x..." },
+  "balances": {
+    "balances": [
+      ["0x1...", 1000000000],
+      ["0x2...", 1000000000]
+    ]
+  },
+  "qtx": {
+    "totalSupply": 2000000000
+  }
+  // ... other initial state
+}

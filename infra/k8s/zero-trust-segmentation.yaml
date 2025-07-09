@@ -1,0 +1,17 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: zero-trust-segmentation
+  namespace: quantora
+spec:
+  endpointSelector:
+    matchLabels:
+      app: "*"
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            zero-trust: "true"
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            zero-trust: "true"

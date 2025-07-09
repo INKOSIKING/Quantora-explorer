@@ -1,0 +1,19 @@
+name: Key and Credential Rotation
+
+on:
+  schedule:
+    - cron: "0 3 * * 0" # Weekly
+  workflow_dispatch:
+
+jobs:
+  rotate-keys:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rotate JWT signing keys
+        run: |
+          vault write -f secret/rotate/quantora/jwt
+      - name: Rotate DB and API keys
+        run: |
+          vault write -f secret/rotate/quantora/db
+          vault write -f secret/rotate/quantora/api

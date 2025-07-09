@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quantora-exchange
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: quantora-exchange
+  template:
+    metadata:
+      labels:
+        app: quantora-exchange
+    spec:
+      containers:
+      - name: exchange
+        image: yourrepo/quantora-exchange:latest
+        ports:
+        - containerPort: 8002
+        envFrom:
+        - configMapRef:
+            name: quantora-config
+        - secretRef:
+            name: quantora-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quantora-exchange
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8002
+      targetPort: 8002
+  selector:
+    app: quantora-exchange

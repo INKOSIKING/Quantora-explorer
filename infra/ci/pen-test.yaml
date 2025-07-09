@@ -1,0 +1,21 @@
+name: Automated Penetration Test
+
+on:
+  schedule:
+    - cron: "0 2 1 * *" # Monthly
+
+jobs:
+  zap-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.7.0
+        with:
+          target: "https://quantora.com"
+          rules_file_name: ".zap/rules.tsv"
+      - name: Archive ZAP report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: zap-report.html

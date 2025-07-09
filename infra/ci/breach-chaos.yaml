@@ -1,0 +1,19 @@
+name: Breach Simulation & Chaos
+
+on:
+  schedule:
+    - cron: "0 4 * * 7"
+
+jobs:
+  breach-chaos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inject breach simulation
+        run: python scripts/simulate_breach.py --scenarios scenarios/breach.json
+      - name: Monitor detection/response
+        run: python scripts/monitor_response.py --output chaos_report.json
+      - name: Upload chaos report
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-report
+          path: chaos_report.json

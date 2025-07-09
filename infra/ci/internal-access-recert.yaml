@@ -1,0 +1,19 @@
+name: Automated Internal Access Recertification
+
+on:
+  schedule:
+    - cron: "0 22 * * 6"
+
+jobs:
+  access-recert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Review internal user access
+        run: python scripts/review_access.py --users configs/internal_users.yaml --output access_review.json
+      - name: Notify for recertification
+        run: python scripts/notify_access_recert.py --input access_review.json
+      - name: Upload recertification report
+        uses: actions/upload-artifact@v4
+        with:
+          name: access-recert-report
+          path: access_review.json

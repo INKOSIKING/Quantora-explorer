@@ -1,0 +1,19 @@
+name: Branch Protection
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  branch-protection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure PRs required for main/develop
+        run: |
+          gh api \
+            -X PATCH \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/branches/main/protection \
+            -F required_status_checks.strict=true \
+            -F required_pull_request_reviews.dismiss_stale_reviews=true \
+            -F enforce_admins=true

@@ -1,0 +1,27 @@
+name: Air-Gapped Build & Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-airgapped:
+    runs-on: self-hosted
+    env:
+      NO_INTERNET: "true"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies from local cache
+        run: |
+          pip install --no-index --find-links=/mnt/artifacts/pypi/ -r requirements.txt
+      - name: Build Docker image
+        run: docker build --network=none -t quantora-app:${{ github.sha }} .
+      - name: Scan image (offline)
+        run: trivy image --input /mnt/artifacts/trivy-db quantora-app:${{ github.sha }}
+      - name: Export for offline deployment
+        run: docker save quantora-app:${{ github.sha }} > quantora-app.tar
+      - name: Upload image tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: airgapped-image
+          path: quantora-app.tar

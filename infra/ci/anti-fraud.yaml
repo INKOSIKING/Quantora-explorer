@@ -1,0 +1,30 @@
+name: Real-Time Anti-Fraud Detection
+
+on:
+  schedule:
+    - cron: "*/10 * * * *" # Every 10 minutes
+
+jobs:
+  anti-fraud:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run fraud analytics engine
+        run: |
+          python scripts/anti_fraud.py --events logs/events.log --rules rules/fraud_rules.json --output fraud_report.json
+      - name: Notify Security Team on detection
+        if: failure()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "🚨 Fraudulent pattern detected. Immediate review required.",
+              "attachments": [{"title": "Fraud Report", "text": "$(cat fraud_report.json)"}]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Upload fraud report
+        uses: actions/upload-artifact@v4
+        with:
+          name: fraud-report
+          path: fraud_report.json

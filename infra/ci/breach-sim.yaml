@@ -1,0 +1,16 @@
+name: Breach & Attack Simulation
+
+on:
+  schedule:
+    - cron: "0 1 * * 6" # Weekly
+
+jobs:
+  breach-sim:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run attack simulation
+        uses: cybereason/breach-sim-action@v1
+        with:
+          scenarios: "data-exfil, lateral-move, privilege-escalation"
+      - name: Validate detection and response
+        run: python scripts/validate_blue_team.py

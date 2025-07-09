@@ -1,0 +1,33 @@
+name: Air-Gapped ML Training
+
+on:
+  workflow_dispatch:
+
+jobs:
+  airgap-train:
+    runs-on: self-hosted
+    env:
+      NO_INTERNET: "true"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Load data and dependencies from local storage
+        run: |
+          cp /mnt/data/training.csv ./data/
+          pip install --no-index --find-links=/mnt/artifacts/pypi/ -r ml-pipelines/requirements.txt
+      - name: Train Model
+        run: python ml-pipelines/train.py --data ./data/training.csv --output ./models/model.pkl
+      - name: Validate Model
+        run: python ml-pipelines/validate.py --model ./models/model.pkl --test ./data/test.csv
+      - name: Generate and sign model hash
+        run: |
+          sha256sum ./models/model.pkl > model.sha256
+          cosign sign-blob --key cosign.key --output-signature model.sig ./models/model.pkl
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: airgapped-ml-artifacts
+          path: |
+            models/model.pkl
+            model.sha256
+            model.sig

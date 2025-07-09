@@ -1,0 +1,21 @@
+name: API Schema Drift Detection
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "openapi.yaml"
+
+jobs:
+  api-schema-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare OpenAPI schema to baseline
+        run: |
+          diff -u openapi.yaml docs/api/openapi-baseline.yaml > schema-drift.patch || true
+      - name: Upload drift patch
+        uses: actions/upload-artifact@v4
+        with:
+          name: schema-drift
+          path: schema-drift.patch

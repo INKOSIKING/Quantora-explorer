@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quantora-node
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: quantora-node
+  template:
+    metadata:
+      labels:
+        app: quantora-node
+    spec:
+      containers:
+        - name: node
+          image: quantora/node:latest
+          ports:
+            - containerPort: 30303
+            - containerPort: 9944
+          volumeMounts:
+            - mountPath: /data
+              name: node-data
+          env:
+            - name: NODE_ENV
+              value: "production"
+      volumes:
+        - name: node-data
+          persistentVolumeClaim:
+            claimName: node-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quantora-node
+spec:
+  type: ClusterIP
+  selector:
+    app: quantora-node
+  ports:
+    - port: 30303
+      targetPort: 30303
+    - port: 9944
+      targetPort: 9944

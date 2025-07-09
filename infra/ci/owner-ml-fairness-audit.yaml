@@ -1,0 +1,19 @@
+name: Owner-Only AI/ML Fairness & Explainability Audit
+
+on:
+  schedule:
+    - cron: "0 16 * * 2"
+
+jobs:
+  ml-fairness-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Audit ML models for fairness/explainability
+        run: python scripts/audit_ml_fairness.py --models models/ --owner "Comfort Lindokuhle Mhaleni" --output fairness_audit.json
+      - name: Owner review and approval
+        run: python scripts/owner_sign_fairness.py --input fairness_audit.json --owner "Comfort Lindokuhle Mhaleni" --output signed_fairness.json
+      - name: Upload signed fairness audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-ml-fairness-audit
+          path: signed_fairness.json

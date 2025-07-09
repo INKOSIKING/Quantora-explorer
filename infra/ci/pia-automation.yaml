@@ -1,0 +1,24 @@
+name: Privacy Impact Assessment
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'services/**'
+      - 'infra/**'
+      - 'platform/**'
+      - 'data/**'
+
+jobs:
+  pia:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run PIA tool
+        run: |
+          python scripts/auto_pia.py --codebase ./ --output pia_report.json
+      - name: Upload PIA report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pia-report
+          path: pia_report.json

@@ -1,0 +1,17 @@
+name: SaaS Data Flow Inventory
+
+on:
+  schedule:
+    - cron: "0 8 * * 1" # Weekly
+
+jobs:
+  saas-flow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Analyze integration configs
+        run: python scripts/saas_data_flow.py --config services/integrations/ --output saas_flow.json
+      - name: Upload inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: saas-flow-report
+          path: saas_flow.json

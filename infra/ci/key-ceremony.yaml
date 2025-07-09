@@ -1,0 +1,26 @@
+name: Air-Gapped Key Ceremony
+
+on:
+  workflow_dispatch:
+
+jobs:
+  airgap-key:
+    runs-on: self-hosted
+    env:
+      NO_INTERNET: "true"
+    steps:
+      - name: Initialize key ceremony
+        run: |
+          gpg --gen-key --batch key-params.txt
+      - name: Split key with Shamir's Secret Sharing
+        run: |
+          sss-split -t 3 -n 5 -w keyshare.key < ~/.gnupg/private.key
+      - name: Archive key shares securely
+        run: |
+          tar czf keyshares.tar.gz keyshare.key*
+          shred -u ~/.gnupg/private.key
+      - name: Upload for vault import (manual step)
+        uses: actions/upload-artifact@v4
+        with:
+          name: keyshares
+          path: keyshares.tar.gz

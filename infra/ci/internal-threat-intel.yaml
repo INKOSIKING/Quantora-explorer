@@ -1,0 +1,19 @@
+name: Internal Threat Intelligence Feed & Enrichment
+
+on:
+  schedule:
+    - cron: "0 14 * * *"
+
+jobs:
+  threat-intel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch internal/external threat intel feeds
+        run: python scripts/fetch_threat_intel.py --internal --output internal_feed.json
+      - name: Enrich findings with context
+        run: python scripts/enrich_threat_intel.py --input internal_feed.json --output enriched_intel.json
+      - name: Upload intel report (internal)
+        uses: actions/upload-artifact@v4
+        with:
+          name: threat-intel-report
+          path: enriched_intel.json

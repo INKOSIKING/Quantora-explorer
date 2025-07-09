@@ -1,0 +1,25 @@
+name: Compliance Evidence Snapshot
+
+on:
+  schedule:
+    - cron: "0 0 * * 1" # Weekly
+  workflow_dispatch:
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Archive RBAC, Network, and Policy
+        run: |
+          kubectl get roles,rolebindings,clusterroles,clusterrolebindings -A -o yaml > rbac.yaml
+          kubectl get networkpolicies -A -o yaml > networkpolicies.yaml
+          kubectl get podsecuritypolicies -A -o yaml > psp.yaml
+      - name: Upload all evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-evidence
+          path: |
+            rbac.yaml
+            networkpolicies.yaml
+            psp.yaml

@@ -1,0 +1,22 @@
+name: Insider Threat Detection
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # Daily
+
+jobs:
+  insider-threat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Analyze access logs for anomalies
+        run: |
+          python scripts/analyze_access.py --logs logs/audit.log --output threat_report.json
+      - name: Flag high-risk behavior
+        run: |
+          python scripts/flag_insider.py --input threat_report.json --threshold 0.8
+      - name: Upload threat report
+        uses: actions/upload-artifact@v4
+        with:
+          name: insider-threat-report
+          path: threat_report.json

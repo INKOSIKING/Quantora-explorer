@@ -1,0 +1,18 @@
+name: Owner-Only Data Export & Audit Control
+
+on:
+  workflow_dispatch:
+
+jobs:
+  data-export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Owner authorization for data export
+        run: python scripts/owner_authorize_export.py --owner "Comfort Lindokuhle Mhaleni" --output export_approval.json
+      - name: Perform export (if approved)
+        run: python scripts/export_data.py --input export_approval.json --output exported_data.csv
+      - name: Log and upload export audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-data-export-audit
+          path: exported_data.csv

@@ -1,0 +1,22 @@
+name: ML Model SBOM & Signature Verification
+
+on:
+  push:
+    paths:
+      - 'models/**'
+
+jobs:
+  verify-model:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate SBOM for Model
+        run: syft models/*.onnx -o cyclonedx-json > model-sbom.json
+      - name: Sign Model SBOM
+        run: cosign attest --key cosign.key --type sbom --predicate model-sbom.json models/model.onnx
+      - name: Verify Model Signature
+        run: cosign verify-attestation --type sbom --key cosign.pub models/model.onnx
+      - name: Upload Attestation
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-sbom-attestation
+          path: model-sbom.json

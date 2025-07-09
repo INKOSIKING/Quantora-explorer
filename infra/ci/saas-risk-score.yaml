@@ -1,0 +1,23 @@
+name: SaaS Risk Scoring
+
+on:
+  pull_request:
+    paths:
+      - "services/integrations/**"
+
+jobs:
+  saas-risk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Score SaaS risk
+        run: |
+          python scripts/score_saas_risk.py --integration ./services/integrations/ --output saas_score.json
+      - name: Require approval for high risk
+        run: |
+          if jq '.score' saas_score.json | grep -q '[8-9]\|10'; then exit 1; fi
+      - name: Upload score
+        uses: actions/upload-artifact@v4
+        with:
+          name: saas-risk-score
+          path: saas_score.json

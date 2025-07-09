@@ -1,0 +1,18 @@
+name: Owner-Branded Policy Exception Workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  policy-exception:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request policy exception
+        run: python scripts/request_policy_exception.py --requestor ${{ github.actor }} --reason "${{ github.event.inputs.reason }}" --output exception_request.json
+      - name: Owner review and decision
+        run: python scripts/owner_policy_decision.py --input exception_request.json --owner "Comfort Lindokuhle Mhaleni" --output exception_decision.json
+      - name: Upload decision
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-policy-exception
+          path: exception_decision.json

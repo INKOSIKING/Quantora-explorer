@@ -1,0 +1,18 @@
+name: Owner-Authorized Emergency Response Workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  emergency-response:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Initiate emergency incident
+        run: python scripts/initiate_emergency.py --desc "${{ github.event.inputs.description }}" --owner "Comfort Lindokuhle Mhaleni" --output incident_id.txt
+      - name: Owner authorization required for major actions
+        run: python scripts/owner_authorize_incident.py --incident $(cat incident_id.txt) --owner "Comfort Lindokuhle Mhaleni" --output incident_decision.json
+      - name: Upload emergency response audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-emergency-response
+          path: incident_decision.json

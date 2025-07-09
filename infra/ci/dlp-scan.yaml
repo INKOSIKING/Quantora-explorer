@@ -1,0 +1,20 @@
+name: Data Loss Prevention Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  dlp-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan codebase for PII, secrets, and sensitive data
+        uses: google/dlp-action@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          info_types: "EMAIL_ADDRESS,PHONE_NUMBER,CREDIT_CARD_NUMBER,US_SOCIAL_SECURITY_NUMBER"
+          min_likelihood: "POSSIBLE"
+          max_findings: "100"

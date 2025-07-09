@@ -1,0 +1,17 @@
+name: Data Lineage Traceability
+
+on:
+  schedule:
+    - cron: "0 2 * * 0"
+
+jobs:
+  data-lineage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate lineage graph
+        run: python scripts/data_lineage.py --input data/ --output lineage.json
+      - name: Upload lineage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-lineage
+          path: lineage.json

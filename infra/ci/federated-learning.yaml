@@ -1,0 +1,17 @@
+name: Federated Learning Orchestration
+
+on:
+  workflow_dispatch:
+
+jobs:
+  federated-learning:
+    runs-on: self-hosted
+    steps:
+      - name: Start local node training (no data leaves site)
+        run: python scripts/fed_train.py --data local_data/ --output local_model.pth
+      - name: Encrypt and sign model update
+        run: python scripts/encrypt_model_update.py --input local_model.pth --output encrypted_update.bin
+      - name: Send encrypted update to aggregator
+        run: python scripts/send_update.py --file encrypted_update.bin --endpoint ${{ secrets.FED_AGGREGATOR_URL }}
+      - name: Log aggregation event (internal only)
+        run: python scripts/audit_fed_update.py --input encrypted_update.bin --user ${{ github.actor }}

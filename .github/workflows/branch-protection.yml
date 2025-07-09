@@ -1,0 +1,16 @@
+name: Enforce Branch Protection
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  block-direct:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if commit is a PR merge
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" && "${{ github.event.pusher.name }}" != "github-actions[bot]" ]]; then
+            echo "Direct pushes to main are not allowed. Please use Pull Requests."
+            exit 1
+          fi

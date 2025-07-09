@@ -1,0 +1,21 @@
+name: Data Minimization Enforcement
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  data-min:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan for excessive data collection
+        run: python scripts/data_minimization.py --src services/ --output data_min_report.json
+      - name: Block merge on violation
+        run: |
+          if grep -q "VIOLATION" data_min_report.json; then exit 1; fi
+      - name: Upload minimization report
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-minimization-report
+          path: data_min_report.json

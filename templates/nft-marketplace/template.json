@@ -1,0 +1,6 @@
+{
+  "name": "NFT Marketplace White-Label",
+  "description": "NFT minting, marketplace, and auction platform template.",
+  "features": ["Minting", "Auctions", "Marketplace", "Royalties", "Wallet"],
+  "integrations": ["NFT Module", "Wallet", "Explorer"]
+}

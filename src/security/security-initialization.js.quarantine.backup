@@ -1,0 +1,90 @@
+
+const SecurityOrchestrator = require('../../security/security-orchestrator');
+
+class SecurityInitialization {
+    constructor() {
+        this.securityOrchestrator = null;
+        this.securityLevel = 'MAXIMUM';
+        this.initialized = false;
+    }
+
+    async initializePlatformSecurity() {
+        console.log('🛡️ INITIALIZING QUANTORA PLATFORM SECURITY');
+        console.log('🔐 Security Level: ENTERPRISE FORTRESS');
+        console.log('🌊 Quantum Resistance: ACTIVE');
+        console.log('🚫 Zero Trust: ENABLED');
+        
+        try {
+            // Initialize Security Orchestrator
+            this.securityOrchestrator = new SecurityOrchestrator();
+            
+            // Wait for security initialization
+            await this.waitForSecurityInitialization();
+            
+            this.initialized = true;
+            console.log('✅ QUANTORA SECURITY FORTRESS ONLINE');
+            console.log('🛡️ ALL SECURITY SYSTEMS OPERATIONAL');
+            
+            return this.securityOrchestrator;
+            
+        } catch (error) {
+            console.error('❌ SECURITY INITIALIZATION FAILED:', error);
+            throw new Error('CRITICAL: Security initialization failed');
+        }
+    }
+
+    async waitForSecurityInitialization() {
+        return new Promise((resolve) => {
+            const checkInterval = setInterval(() => {
+                const status = this.securityOrchestrator.getSecurityOrchestrationStatus();
+                
+                if (status.orchestrator.status === 'OPERATIONAL') {
+                    clearInterval(checkInterval);
+                    resolve();
+                }
+            }, 1000);
+        });
+    }
+
+    getSecurityMiddleware() {
+        if (!this.initialized) {
+            throw new Error('Security not initialized');
+        }
+        
+        return this.securityOrchestrator.securityModules.enterpriseSecurity.createSecurityMiddleware();
+    }
+
+    getExchangeSecurityMiddleware() {
+        if (!this.initialized) {
+            throw new Error('Security not initialized');
+        }
+        
+        return this.securityOrchestrator.securityModules.exchangeSecurity.createExchangeSecurityMiddleware();
+    }
+
+    performSecurityScan() {
+        if (!this.initialized) {
+            throw new Error('Security not initialized');
+        }
+        
+        return this.securityOrchestrator.securityModules.codeScanner.scanDirectory('./');
+    }
+
+    getSecurityStatus() {
+        if (!this.initialized) {
+            return { status: 'NOT_INITIALIZED' };
+        }
+        
+        return this.securityOrchestrator.getSecurityOrchestrationStatus();
+    }
+
+    generateSecurityReport() {
+        if (!this.initialized) {
+            throw new Error('Security not initialized');
+        }
+        
+        return this.securityOrchestrator.generateSecurityReport();
+    }
+}
+
+module.exports = SecurityInitialization;
