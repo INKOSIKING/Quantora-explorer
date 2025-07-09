@@ -11,7 +11,6 @@ mod consensus;
 mod transaction;
 mod wallet;
 
-use blockchain::Blockchain;
 use network::NetworkManager;
 use consensus::ConsensusEngine;
 use transaction::Transaction;

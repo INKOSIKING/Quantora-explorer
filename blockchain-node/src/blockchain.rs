@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use sha2::{Sha256, Digest};
 use chrono::{DateTime, Utc};
-use bip39::{Mnemonic, Language, Seed};
+use bip39::{Mnemonic, Language};
 use secp256k1::{SecretKey, PublicKey, Secp256k1};
 use hex;
 
@@ -55,6 +55,20 @@ pub struct Blockchain {
     pub founder_wallet: Wallet,
 }
 
+impl Block {
+    pub fn genesis() -> Self {
+        Block {
+            index: 0,
+            timestamp: chrono::Utc::now(),
+            previous_hash: "0".to_string(),
+            hash: "genesis_hash".to_string(),
+            transactions: vec![],
+            nonce: 0,
+            miner_reward: 0,
+        }
+    }
+}
+
 impl Blockchain {
     pub fn new() -> Self {
         let mut blockchain = Blockchain {
@@ -75,9 +89,9 @@ impl Blockchain {
     
     fn create_founder_wallet() -> Wallet {
         // Generate the founder's seed phrase
-        let mnemonic = Mnemonic::generate_in(Language::English, 12).unwrap();
+        let mnemonic = Mnemonic::generate(12).unwrap();
         let seed_phrase = mnemonic.to_string();
-        let seed = Seed::new(&mnemonic, "");
+        let seed = mnemonic.to_seed("");
         
         let secp = Secp256k1::new();
         let secret_key = SecretKey::from_slice(&seed.as_bytes()[0..32]).unwrap();
@@ -101,9 +115,9 @@ impl Blockchain {
     }
     
     pub fn create_wallet() -> Wallet {
-        let mnemonic = Mnemonic::generate_in(Language::English, 12).unwrap();
+        let mnemonic = Mnemonic::generate(12).unwrap();
         let seed_phrase = mnemonic.to_string();
-        let seed = Seed::new(&mnemonic, "");
+        let seed = mnemonic.to_seed("");
         
         let secp = Secp256k1::new();
         let secret_key = SecretKey::from_slice(&seed.as_bytes()[0..32]).unwrap();
