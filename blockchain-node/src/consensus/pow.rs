@@ -3,6 +3,7 @@ use crate::blockchain::{Block, BlockHeader};
 use crate::mempool::Mempool;
 use sha2::{Digest, Sha256};
 use chrono::Utc;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct PoWEngine {
     pub difficulty: u64,
@@ -37,24 +38,30 @@ impl ConsensusEngine for PoWEngine {
     }
 
     fn propose_block(&self, mempool: &Mempool, parent_hash: &str, miner_address: &str) -> Block {
-        let timestamp = Utc::now().timestamp();
         let transactions = mempool.get_transactions();
-        let mut nonce = 0u64;
-        loop {
-            let header = BlockHeader {
-                parent_hash: parent_hash.to_string(),
-                timestamp,
-                miner: miner_address.to_string(),
-                nonce,
-            };
-            let hash = PoWEngine::hash_with_nonce(&header, nonce);
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+
+        let header = BlockHeader {
+            index: 0, // This should be determined by the blockchain
+            timestamp,
+            parent_hash: parent_hash.to_string(),
+            miner: miner_address.to_string(),
+            nonce: 0,
+        };
+
+        let mut block = Block {
+            header: header.clone(),
+            transactions,
+        };
+    loop {
+            let hash = PoWEngine::hash_with_nonce(&block.header, block.header.nonce);
             if PoWEngine::meets_difficulty(&hash, self.difficulty) {
-                return Block {
-                    header,
-                    transactions: transactions.clone(),
-                };
+                return block;
             }
-            nonce += 1;
+            block.header.nonce += 1;
         }
     }
 }

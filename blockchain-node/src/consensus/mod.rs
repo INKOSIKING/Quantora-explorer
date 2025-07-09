@@ -17,5 +17,5 @@ pub struct ConsensusConfig {
 
 pub trait ConsensusEngine {
     fn validate_block(&self, block: &Block) -> bool;
-    fn propose_block(&self, mempool: &Mempool) -> Block;
+    fn propose_block(&self, mempool: &Mempool, parent_hash: &str, miner_address: &str) -> Block;
 }

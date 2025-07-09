@@ -1,16 +1,25 @@
-
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use sha2::{Sha256, Digest};
+use sha2::{Digest, Sha256};
+use std::time::{SystemTime, UNIX_EPOCH};
 use chrono::{DateTime, Utc};
 use bip39::{Mnemonic, Language};
 use secp256k1::{SecretKey, PublicKey, Secp256k1};
 use hex;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Block {
+pub struct BlockHeader {
     pub index: u64,
-    pub timestamp: DateTime<Utc>,
+    pub timestamp: u64,
+    pub previous_hash: String,
+    pub merkle_root: String,
+    pub nonce: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Block {
+    pub header: BlockHeader,
+    pub index: u64,
+    pub timestamp: u64,
     pub previous_hash: String,
     pub hash: String,
     pub transactions: Vec<Transaction>,
@@ -58,8 +67,15 @@ pub struct Blockchain {
 impl Block {
     pub fn genesis() -> Self {
         Block {
+            header: BlockHeader {
+                index: 0,
+                timestamp: 0,
+                previous_hash: "0".to_string(),
+                merkle_root: "genesis_merkle_root".to_string(),
+                nonce: 0,
+            },
             index: 0,
-            timestamp: chrono::Utc::now(),
+            timestamp: chrono::Utc::now().timestamp() as u64,
             previous_hash: "0".to_string(),
             hash: "genesis_hash".to_string(),
             transactions: vec![],
@@ -82,23 +98,23 @@ impl Blockchain {
             reserved_supply: 6_000_000_000_000, // 6 trillion for founder
             founder_wallet: Self::create_founder_wallet(),
         };
-        
+
         blockchain.create_genesis_block();
         blockchain
     }
-    
+
     fn create_founder_wallet() -> Wallet {
         // Generate the founder's seed phrase
         let mnemonic = Mnemonic::generate(12).unwrap();
         let seed_phrase = mnemonic.to_string();
         let seed = mnemonic.to_seed("");
-        
+
         let secp = Secp256k1::new();
         let secret_key = SecretKey::from_slice(&seed.as_bytes()[0..32]).unwrap();
         let public_key = PublicKey::from_secret_key(&secp, &secret_key);
-        
+
         let address = Self::public_key_to_address(&public_key);
-        
+
         Wallet {
             address,
             seed_phrase,
@@ -106,25 +122,25 @@ impl Blockchain {
             public_key: hex::encode(public_key.serialize()),
         }
     }
-    
+
     fn public_key_to_address(public_key: &PublicKey) -> String {
         let mut hasher = Sha256::new();
         hasher.update(public_key.serialize());
         let hash = hasher.finalize();
         format!("QuanX{}", hex::encode(&hash[0..20]))
     }
-    
+
     pub fn create_wallet() -> Wallet {
         let mnemonic = Mnemonic::generate(12).unwrap();
         let seed_phrase = mnemonic.to_string();
         let seed = mnemonic.to_seed("");
-        
+
         let secp = Secp256k1::new();
         let secret_key = SecretKey::from_slice(&seed.as_bytes()[0..32]).unwrap();
         let public_key = PublicKey::from_secret_key(&secp, &secret_key);
-        
+
         let address = Self::public_key_to_address(&public_key);
-        
+
         Wallet {
             address,
             seed_phrase,
@@ -132,7 +148,7 @@ impl Blockchain {
             public_key: hex::encode(public_key.serialize()),
         }
     }
-    
+
     fn create_genesis_block(&mut self) {
         // Genesis block with founder allocation
         let genesis_transaction = Transaction {
@@ -143,22 +159,29 @@ impl Blockchain {
             signature: "genesis_allocation".to_string(),
             tx_type: TransactionType::Genesis,
         };
-        
+
         let genesis_block = Block {
+            header: BlockHeader {
+                index: 0,
+                timestamp: Utc::now().timestamp() as u64,
+                previous_hash: "0".to_string(),
+                merkle_root: "genesis_merkle_root".to_string(),
+                nonce: 0,
+            },
             index: 0,
-            timestamp: Utc::now(),
+            timestamp: Utc::now().timestamp() as u64,
             previous_hash: "0".to_string(),
             hash: "genesis_hash".to_string(),
             transactions: vec![genesis_transaction.clone()],
             nonce: 0,
             miner_reward: 0,
         };
-        
+
         // Set founder's balance
         self.balances.insert(self.founder_wallet.address.clone(), self.reserved_supply);
-        
+
         self.chain.push(genesis_block);
-        
+
         println!("🚀 QuanX Blockchain Initialized!");
         println!("📊 Total Supply: {} QuanX", self.format_amount(self.total_supply));
         println!("🔥 Burned Supply: {} QuanX (untouchable)", self.format_amount(self.burned_supply));
@@ -167,7 +190,7 @@ impl Blockchain {
         println!("🔑 Founder Wallet Address: {}", self.founder_wallet.address);
         println!("🌱 Founder Seed Phrase: {}", self.founder_wallet.seed_phrase);
     }
-    
+
     fn format_amount(&self, amount: u64) -> String {
         if amount >= 1_000_000_000_000 {
             format!("{:.1}T", amount as f64 / 1_000_000_000_000.0)
@@ -179,17 +202,17 @@ impl Blockchain {
             amount.to_string()
         }
     }
-    
+
     pub fn add_transaction(&mut self, transaction: Transaction) -> Result<(), String> {
         // Basic validation
         if transaction.from == transaction.to {
             return Err("Cannot send to self".to_string());
         }
-        
+
         if transaction.amount == 0 {
             return Err("Amount must be greater than 0".to_string());
         }
-        
+
         // Check balance for non-system transactions
         if transaction.from != "system" && transaction.from != "genesis" {
             let balance = self.balances.get(&transaction.from).unwrap_or(&0);
@@ -197,11 +220,11 @@ impl Blockchain {
                 return Err("Insufficient QuanX balance".to_string());
             }
         }
-        
+
         self.pending_transactions.push(transaction);
         Ok(())
     }
-    
+
     pub fn mine_block(&mut self, miner_address: String) -> Block {
         // Calculate mining reward (decreases over time)
         let current_height = self.chain.len() as u64;
@@ -209,7 +232,7 @@ impl Blockchain {
         let halving_interval = 210000; // Halve every 210k blocks
         let halvings = current_height / halving_interval;
         let mining_reward = base_reward >> halvings.min(63); // Prevent overflow
-        
+
         // Check if mining pool has enough
         let actual_reward = if self.mining_pool >= mining_reward {
             self.mining_pool -= mining_reward;
@@ -219,7 +242,7 @@ impl Blockchain {
             self.mining_pool = 0;
             remaining
         };
-        
+
         // Add mining reward transaction
         if actual_reward > 0 {
             let mining_reward_tx = Transaction {
@@ -230,42 +253,49 @@ impl Blockchain {
                 signature: "mining_reward".to_string(),
                 tx_type: TransactionType::Mining,
             };
-            
+
             self.pending_transactions.push(mining_reward_tx);
         }
-        
+
         let previous_block = self.chain.last().unwrap();
         let mut new_block = Block {
+            header: BlockHeader {
+                index: previous_block.index + 1,
+                timestamp: Utc::now().timestamp() as u64,
+                previous_hash: previous_block.hash.clone(),
+                merkle_root: "temp_merkle_root".to_string(), // TODO: Implement merkle root calculation
+                nonce: 0,
+            },
             index: previous_block.index + 1,
-            timestamp: Utc::now(),
+            timestamp: Utc::now().timestamp() as u64,
             previous_hash: previous_block.hash.clone(),
             hash: String::new(),
             transactions: self.pending_transactions.clone(),
             nonce: 0,
             miner_reward: actual_reward,
         };
-        
+
         // Proof of work
         new_block.hash = self.proof_of_work(&mut new_block);
-        
+
         // Update balances
         self.update_balances(&new_block.transactions);
-        
+
         // Add block to chain
         self.chain.push(new_block.clone());
-        
+
         // Clear pending transactions
         self.pending_transactions.clear();
-        
+
         println!("⛏️  Block #{} mined! Reward: {} QuanX", new_block.index, self.format_amount(actual_reward));
         println!("🪙 Mining Pool Remaining: {} QuanX", self.format_amount(self.mining_pool));
-        
+
         new_block
     }
-    
+
     fn proof_of_work(&self, block: &mut Block) -> String {
         let target = "0".repeat(self.difficulty);
-        
+
         loop {
             let hash = self.calculate_hash(block);
             if hash.starts_with(&target) {
@@ -274,7 +304,7 @@ impl Blockchain {
             block.nonce += 1;
         }
     }
-    
+
     fn calculate_hash(&self, block: &Block) -> String {
         let mut hasher = Sha256::new();
         let block_string = format!(
@@ -289,27 +319,27 @@ impl Blockchain {
         hasher.update(block_string.as_bytes());
         format!("{:x}", hasher.finalize())
     }
-    
+
     fn update_balances(&mut self, transactions: &[Transaction]) {
         for tx in transactions {
             if tx.from != "system" && tx.from != "genesis" {
                 let from_balance = self.balances.get(&tx.from).unwrap_or(&0);
                 self.balances.insert(tx.from.clone(), from_balance - tx.amount);
             }
-            
+
             let to_balance = self.balances.get(&tx.to).unwrap_or(&0);
             self.balances.insert(tx.to.clone(), to_balance + tx.amount);
         }
     }
-    
+
     pub fn get_balance(&self, address: &str) -> u64 {
         *self.balances.get(address).unwrap_or(&0)
     }
-    
+
     pub fn get_founder_info(&self) -> &Wallet {
         &self.founder_wallet
     }
-    
+
     pub fn get_blockchain_stats(&self) -> HashMap<String, String> {
         let mut stats = HashMap::new();
         stats.insert("total_supply".to_string(), self.format_amount(self.total_supply));
@@ -321,16 +351,16 @@ impl Blockchain {
                     self.format_amount(self.total_supply - self.burned_supply - self.mining_pool));
         stats
     }
-    
+
     pub fn is_chain_valid(&self) -> bool {
         for i in 1..self.chain.len() {
             let current_block = &self.chain[i];
             let previous_block = &self.chain[i - 1];
-            
+
             if current_block.hash != self.calculate_hash(current_block) {
                 return false;
             }
-            
+
             if current_block.previous_hash != previous_block.hash {
                 return false;
             }

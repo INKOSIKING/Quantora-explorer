@@ -3,6 +3,7 @@ use crate::blockchain::{Block, BlockHeader};
 use crate::mempool::Mempool;
 use std::collections::HashMap;
 use chrono::Utc;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct PoSEngine {
     pub stakes: HashMap<String, u64>,
@@ -25,17 +26,29 @@ impl ConsensusEngine for PoSEngine {
     }
 
     fn propose_block(&self, mempool: &Mempool, parent_hash: &str, miner_address: &str) -> Block {
-        let timestamp = Utc::now().timestamp();
         let transactions = mempool.get_transactions();
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+
         let header = BlockHeader {
-            parent_hash: parent_hash.to_string(),
+            index: 0, // This should be determined by the blockchain
             timestamp,
-            miner: miner_address.to_string(),
+            previous_hash: parent_hash.to_string(),
+            merkle_root: String::new(), // Calculate merkle root from transactions
             nonce: 0,
         };
+
         Block {
-            header,
-            transactions: transactions.clone(),
+            header: header.clone(),
+            index: 0,
+            timestamp,
+            previous_hash: parent_hash.to_string(),
+            hash: String::new(),
+            transactions,
+            nonce: 0,
+            miner_reward: 25, // Lower reward for PoS
         }
     }
 }
