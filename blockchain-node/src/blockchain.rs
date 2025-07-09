@@ -5,6 +5,10 @@ use chrono::{DateTime, Utc};
 use bip39::{Mnemonic, Language};
 use secp256k1::{SecretKey, PublicKey, Secp256k1};
 use hex;
+use std::collections::HashMap;
+use serde::{Serialize, Deserialize};
+use chrono::Utc;
+use sha2::{Digest, Sha256};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BlockHeader {

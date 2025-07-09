@@ -35,20 +35,14 @@ impl ConsensusEngine for PoSEngine {
         let header = BlockHeader {
             index: 0, // This should be determined by the blockchain
             timestamp,
-            previous_hash: parent_hash.to_string(),
-            merkle_root: String::new(), // Calculate merkle root from transactions
+            parent_hash: parent_hash.to_string(),
+            miner: miner_address.to_string(),
             nonce: 0,
         };
 
         Block {
-            header: header.clone(),
-            index: 0,
-            timestamp,
-            previous_hash: parent_hash.to_string(),
-            hash: String::new(),
+            header,
             transactions,
-            nonce: 0,
-            miner_reward: 25, // Lower reward for PoS
         }
     }
 }

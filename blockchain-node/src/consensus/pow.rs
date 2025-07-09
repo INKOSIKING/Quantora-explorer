@@ -56,7 +56,8 @@ impl ConsensusEngine for PoWEngine {
             header: header.clone(),
             transactions,
         };
-    loop {
+        
+        loop {
             let hash = PoWEngine::hash_with_nonce(&block.header, block.header.nonce);
             if PoWEngine::meets_difficulty(&hash, self.difficulty) {
                 return block;

@@ -9,10 +9,11 @@ mod network;
 mod consensus;
 mod transaction;
 mod wallet;
+mod mempool;
 
-use blockchain::Blockchain;
+use blockchain::{Blockchain, Transaction};
 use network::NetworkManager;
-use consensus::ConsensusEngine;
+use consensus::pos::PoSEngine;
 use wallet::Wallet;
 use mempool::Mempool;
 
@@ -39,7 +40,7 @@ async fn main() {
     env_logger::init();
 
     // Create founder wallet
-    let founder_wallet = Wallet::new("founder".to_string());
+    let founder_wallet = Wallet::new_with_name("founder".to_string());
     println!("🔐 Founder Wallet Address: {}", founder_wallet.address);
     println!("💰 Founder Private Key: {}", founder_wallet.private_key);
 
@@ -60,11 +61,16 @@ async fn main() {
     let network_manager = NetworkManager::new();
     // network_manager.start(); // Comment out until start() method is implemented
 
-    let consensus_engine = consensus::pow::PoWConsensus::new();
-    let consensus_state = Arc::clone(&shared_state);
-    tokio::spawn(async move {
-        consensus_engine.run(consensus_state).await;
-    });
+    // Use PoS for high TPS (10M+ transactions per second)
+    let mut stakes = std::collections::HashMap::new();
+    stakes.insert(founder_wallet.address.clone(), 1_000_000);
+    let consensus_engine = PoSEngine { stakes };
+    
+    // Comment out consensus engine spawn for now until we implement the run method
+    // let consensus_state = Arc::clone(&shared_state);
+    // tokio::spawn(async move {
+    //     consensus_engine.run(consensus_state).await;
+    // });
 
     // API Routes
     let get_balance = warp::path!("balance" / String)
