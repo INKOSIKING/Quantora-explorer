@@ -4,6 +4,8 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use log::{info, error};
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use std::collections::HashMap;
+use serde::{Serialize, Deserialize};
 
 pub struct NetworkManager {
     peers: Arc<Mutex<Vec<String>>>,
@@ -72,11 +74,6 @@ async fn handle_peer(
     
     Ok(())
 }
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use tokio::net::{TcpListener, TcpStream};
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum NetworkMessage {
