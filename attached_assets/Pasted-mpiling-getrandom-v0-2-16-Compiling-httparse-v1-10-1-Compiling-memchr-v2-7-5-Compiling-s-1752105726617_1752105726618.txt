@@ -1,0 +1,357 @@
+mpiling getrandom v0.2.16
+   Compiling httparse v1.10.1
+   Compiling memchr v2.7.5
+   Compiling serde v1.0.219
+   Compiling ppv-lite86 v0.2.21
+   Compiling rand_core v0.6.4
+   Compiling digest v0.10.7
+   Compiling parking_lot v0.12.4
+   Compiling signal-hook-registry v1.4.5
+   Compiling mio v1.0.4
+   Compiling synstructure v0.13.2
+   Compiling socket2 v0.5.10
+   Compiling slab v0.4.10
+   Compiling futures-task v0.3.31
+   Compiling crossbeam-utils v0.8.21
+   Compiling cpufeatures v0.2.17
+   Compiling pin-utils v0.1.0
+   Compiling percent-encoding v2.3.1
+   Compiling futures-util v0.3.31
+   Compiling form_urlencoded v1.2.1
+   Compiling rand_chacha v0.3.1
+   Compiling thiserror v1.0.69
+   Compiling once_cell v1.21.3
+   Compiling zerofrom-derive v0.1.6
+   Compiling yoke-derive v0.8.0
+   Compiling zerovec-derive v0.11.1
+   Compiling displaydoc v0.2.5
+   Compiling tokio-macros v2.5.0
+   Compiling zerofrom v0.1.6
+   Compiling yoke v0.8.0
+   Compiling serde_derive v1.0.219
+   Compiling zerovec v0.11.2
+   Compiling zerotrie v0.2.2
+   Compiling shlex v1.3.0
+   Compiling utf8_iter v1.0.4
+   Compiling tokio v1.46.1
+   Compiling cc v1.2.29
+   Compiling tinystr v0.8.1
+   Compiling icu_locale_core v2.0.0
+   Compiling potential_utf v0.1.2
+   Compiling icu_collections v2.0.0
+   Compiling icu_provider v2.0.0
+   Compiling icu_properties v2.0.1
+   Compiling icu_normalizer v2.0.0
+   Compiling tracing-core v0.1.34
+   Compiling idna_adapter v1.2.1
+   Compiling idna v1.0.3
+   Compiling thiserror-impl v1.0.69
+   Compiling rand v0.8.5
+   Compiling sha1 v0.10.6
+   Compiling unicase v2.8.1
+   Compiling equivalent v1.0.2
+   Compiling hashbrown v0.15.4
+   Compiling bitcoin-internals v0.2.0
+   Compiling mime v0.3.17
+   Compiling mime_guess v2.0.5
+   Compiling indexmap v2.10.0
+   Compiling crossbeam-epoch v0.9.18
+   Compiling tokio-util v0.7.15
+   Compiling url v2.5.4
+   Compiling tracing v0.1.41
+   Compiling secp256k1-sys v0.8.2
+   Compiling aho-corasick v1.1.3
+   Compiling http v1.3.1
+   Compiling num-traits v0.2.19
+   Compiling multer v2.1.0
+   Compiling data-encoding v2.9.0
+   Compiling utf-8 v0.7.6
+   Compiling ryu v1.0.20
+   Compiling serde_json v1.0.140
+   Compiling httpdate v1.0.3
+   Compiling tinyvec_macros v0.1.1
+   Compiling byteorder v1.5.0
+   Compiling regex-syntax v0.8.5
+   Compiling rayon-core v1.12.1
+   Compiling try-lock v0.2.5
+   Compiling want v0.3.1
+   Compiling tungstenite v0.21.0
+   Compiling tinyvec v1.9.0
+   Compiling regex-automata v0.4.9
+   Compiling h2 v0.3.26
+   Compiling crossbeam-deque v0.8.6
+   Compiling pin-project-internal v1.1.10
+   Compiling headers-core v0.2.0
+   Compiling http-body v0.4.6
+   Compiling futures-channel v0.3.31
+   Compiling encoding_rs v0.8.35
+   Compiling anyhow v1.0.98
+   Compiling tower-service v0.3.3
+   Compiling hex-conservative v0.1.2
+   Compiling base64 v0.21.7
+   Compiling spin v0.9.8
+   Compiling headers v0.3.9
+   Compiling bitcoin_hashes v0.13.0
+   Compiling hyper v0.14.32
+   Compiling pin-project v1.1.10
+   Compiling regex v1.11.1
+   Compiling unicode-normalization v0.1.24
+   Compiling tokio-tungstenite v0.21.0
+   Compiling serde_urlencoded v0.7.1
+   Compiling is-terminal v0.4.16
+   Compiling scoped-tls v1.0.1
+   Compiling humantime v2.2.0
+   Compiling termcolor v1.4.1
+   Compiling iana-time-zone v0.1.63
+   Compiling either v1.15.0
+   Compiling rayon v1.10.0
+   Compiling chrono v0.4.41
+   Compiling env_logger v0.10.2
+   Compiling warp v0.3.7
+   Compiling bip39 v2.2.0
+   Compiling secp256k1 v0.27.0
+   Compiling sha2 v0.10.9
+   Compiling hex v0.4.3
+   Compiling blockchain-node v0.1.0 (/home/runner/workspace/blockchain-node)
+warning: unused import: BlockHeader
+ --> blockchain-node/src/consensus/mod.rs:4:32
+  |
+4 | use crate::blockchain::{Block, BlockHeader};
+  |                                ^^^^^^^^^^^
+  |
+  = note: #[warn(unused_imports)] on by default
+
+warning: unused import: Blockchain
+  --> blockchain-node/src/main.rs:14:18
+   |
+14 | use blockchain::{Blockchain, Transaction};
+   |                  ^^^^^^^^^^
+
+warning: unused import: mempool::Mempool
+  --> blockchain-node/src/main.rs:18:5
+   |
+18 | use mempool::Mempool;
+   |     ^^^^^^^^^^^^^^^^
+
+warning: struct Blockchain is never constructed
+  --> blockchain-node/src/blockchain.rs:59:12
+   |
+59 | pub struct Blockchain {
+   |            ^^^^^^^^^^
+   |
+   = note: #[warn(dead_code)] on by default
+
+warning: multiple associated items are never used
+   --> blockchain-node/src/blockchain.rs:97:12
+    |
+96  | impl Blockchain {
+    | --------------- associated items in this implementation
+97  |     pub fn new() -> Self {
+    |            ^^^
+...
+114 |     fn create_founder_wallet() -> Wallet {
+    |        ^^^^^^^^^^^^^^^^^^^^^
+...
+136 |     fn public_key_to_address(public_key: &PublicKey) -> String {
+    |        ^^^^^^^^^^^^^^^^^^^^^
+...
+143 |     pub fn create_wallet() -> Wallet {
+    |            ^^^^^^^^^^^^^
+...
+164 |     fn create_genesis_block(&mut self) {
+    |        ^^^^^^^^^^^^^^^^^^^^
+...
+208 |     fn format_amount(&self, amount: u64) -> String {
+    |        ^^^^^^^^^^^^^
+...
+220 |     pub fn add_transaction(&mut self, transaction: Transaction) -...
+    |            ^^^^^^^^^^^^^^^
+...
+242 |     pub fn mine_block(&mut self, miner_address: String) -> Block {
+    |            ^^^^^^^^^^
+...
+309 |     fn calculate_hash(&self, block: &Block) -> String {
+    |        ^^^^^^^^^^^^^^
+...
+324 |     fn update_balances(&mut self, transactions: &[Transaction]) {
+    |        ^^^^^^^^^^^^^^^
+...
+336 |     pub fn get_balance(&self, address: &str) -> u64 {
+    |            ^^^^^^^^^^^
+...
+340 |     pub fn get_founder_info(&self) -> &Wallet {
+    |            ^^^^^^^^^^^^^^^^
+...
+344 |     pub fn get_blockchain_stats(&self) -> HashMap<String, String> {
+    |            ^^^^^^^^^^^^^^^^^^^^
+...
+356 |     pub fn is_chain_valid(&self) -> bool {
+    |            ^^^^^^^^^^^^^^
+
+warning: field peers is never read
+ --> blockchain-node/src/network.rs:9:5
+  |
+8 | pub struct NetworkManager {
+  |            -------------- field in this struct
+9 |     peers: Arc<Mutex<Vec<String>>>,
+  |     ^^^^^
+
+warning: methods start_listener, add_peer, and broadcast_message are never used
+  --> blockchain-node/src/network.rs:19:18
+   |
+12 | impl NetworkManager {
+   | ------------------- methods in this implementation
+...
+19 |     pub async fn start_listener(&self, addr: &str) -> Result<(), B...
+   |                  ^^^^^^^^^^^^^^
+...
+36 |     pub async fn add_peer(&self, peer_addr: String) {
+   |                  ^^^^^^^^
+...
+43 |     pub async fn broadcast_message(&self, message: &str) -> Result...
+   |                  ^^^^^^^^^^^^^^^^^
+
+warning: function handle_peer is never used
+  --> blockchain-node/src/network.rs:54:10
+   |
+54 | async fn handle_peer(
+   |          ^^^^^^^^^^^
+
+warning: enum ConsensusType is never used
+ --> blockchain-node/src/consensus/mod.rs:7:10
+  |
+7 | pub enum ConsensusType {
+  |          ^^^^^^^^^^^^^
+
+warning: struct ConsensusConfig is never constructed
+  --> blockchain-node/src/consensus/mod.rs:12:12
+   |
+12 | pub struct ConsensusConfig {
+   |            ^^^^^^^^^^^^^^^
+
+warning: methods validate_block and propose_block are never used
+  --> blockchain-node/src/consensus/mod.rs:20:8
+   |
+19 | pub trait ConsensusEngine {
+   |           --------------- methods in this trait
+20 |     fn validate_block(&self, block: &Block) -> bool;
+   |        ^^^^^^^^^^^^^^
+21 |     fn propose_block(&self, mempool: &Mempool, parent_hash: &str, ...
+   |        ^^^^^^^^^^^^^
+
+warning: fields delegated_stakes, validator_votes, and rollup_batches are never read
+  --> blockchain-node/src/consensus/hybrid.rs:18:9
+   |
+12 | pub struct HybridConsensusEngine {
+   |            --------------------- fields in this struct
+...
+18 |     pub delegated_stakes: HashMap<String, HashMap<String, u64>>, /...
+   |         ^^^^^^^^^^^^^^^^
+19 |     pub validator_votes: HashMap<String, u64>,
+   |         ^^^^^^^^^^^^^^^
+...
+30 |     pub rollup_batches: Vec<RollupBatch>,
+   |         ^^^^^^^^^^^^^^
+   |
+   = note: HybridConsensusEngine has derived impls for the traits Clone and Debug, but these are intentionally ignored during dead code analysis
+
+warning: methods select_dag_validators, advance_bft_round, process_zk_batch, and hybrid_validate are never used
+  --> blockchain-node/src/consensus/hybrid.rs:58:8
+   |
+41 | impl HybridConsensusEngine {
+   | -------------------------- methods in this implementation
+...
+58 |     fn select_dag_validators(&self, count: usize) -> Vec<String> {
+   |        ^^^^^^^^^^^^^^^^^^^^^
+...
+69 |     fn advance_bft_round(&mut self) -> bool {
+   |        ^^^^^^^^^^^^^^^^^
+...
+75 |     fn process_zk_batch(&mut self, transactions: Vec<String>) -> R...
+   |        ^^^^^^^^^^^^^^^^
+...
+88 |     pub fn hybrid_validate(&mut self, block: &Block) -> bool {
+   |            ^^^^^^^^^^^^^^^
+
+warning: method estimated_tps is never used
+   --> blockchain-node/src/consensus/hybrid.rs:157:12
+    |
+156 | impl HybridConsensusEngine {
+    | -------------------------- method in this implementation
+157 |     pub fn estimated_tps(&self) -> u64 {
+    |            ^^^^^^^^^^^^^
+
+warning: associated function new is never used
+  --> blockchain-node/src/transaction.rs:23:12
+   |
+22 | impl Transaction {
+   | ---------------- associated function in this implementation
+23 |     pub fn new(from: String, to: String, amount: u64) -> Self {
+   |            ^^^
+
+warning: associated function new is never used
+  --> blockchain-node/src/wallet.rs:17:12
+   |
+16 | impl Wallet {
+   | ----------- associated function in this implementation
+17 |     pub fn new() -> Self {
+   |            ^^^
+
+warning: field known_hashes is never read
+ --> blockchain-node/src/mempool/mod.rs:8:5
+  |
+6 | pub struct Mempool {
+  |            ------- field in this struct
+7 |     txs: Arc<Mutex<HashMap<String, Transact...
+8 |     known_hashes: Arc<Mutex<HashSet<String>>>,
+  |     ^^^^^^^^^^^^
+  |
+  = note: Mempool has a derived impl for the trait Clone, but this is intentionally ignored during dead code analysis
+
+warning: associated items new, add_transaction, remove_transaction, contains, and clear are never used
+  --> blockchain-node/src/mempool/mod.rs:12:12
+   |
+11 | impl Mempool {
+   | ------------ associated items in this implementation
+12 |     pub fn new() -> Self {
+   |            ^^^
+...
+19 |     pub fn add_transaction(&self, tx: Transaction) -> bool {
+   |            ^^^^^^^^^^^^^^^
+...
+31 |     pub fn remove_transaction(&self, tx_hash: &str) {
+   |            ^^^^^^^^^^^^^^^^^^
+...
+43 |     pub fn contains(&self, tx_hash: &str) -> bool {
+   |            ^^^^^^^^
+...
+48 |     pub fn clear(&self) {
+   |            ^^^^^
+
+warning: blockchain-node (bin "blockchain-node") generated 18 warnings (run cargo fix --bin "blockchain-node" to apply 3 suggestions)
+    Finished dev profile [unoptimized + debuginfo] target(s) in 49.84s
+~/workspace$ 
+
+
+ChatGPT said:
+✅ Success! Your code compiled successfully!
+
+You're now at the stage where the binary blockchain-node was built — meaning there are no more compile-time errors, just warnings. Here’s a quick summary of where you stand and what you should do next:
+
+✅ What's Good:
+All critical errors are fixed
+
+Your project compiled cleanly
+
+You're ready to run, test, or build features
+
+⚠️ Warnings Recap (Safe to ignore for now):
+These are mostly about unused code — for example:
+
+Blockchain and Mempool struct methods that aren't used yet
+
+Fields like peers, rollup_batches, known_hashes that are never read
+
+Some enums and traits with unused methods
+
+🔹 Why this happens: These are likely scaffolding or future features that aren't invoked yet (especially in a large project like a blockchain).

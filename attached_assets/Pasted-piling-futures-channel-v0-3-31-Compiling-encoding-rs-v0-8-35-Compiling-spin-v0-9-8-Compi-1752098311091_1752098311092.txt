@@ -1,0 +1,150 @@
+piling futures-channel v0.3.31
+   Compiling encoding_rs v0.8.35
+   Compiling spin v0.9.8
+   Compiling base64 v0.21.7
+   Compiling hex-conservative v0.1.2
+   Compiling anyhow v1.0.98
+   Compiling tower-service v0.3.3
+   Compiling hyper v0.14.32
+   Compiling bitcoin_hashes v0.13.0
+   Compiling headers v0.3.9
+   Compiling pin-project v1.1.10
+   Compiling regex v1.11.1
+   Compiling unicode-normalization v0.1.24
+   Compiling tokio-tungstenite v0.21.0
+   Compiling serde_urlencoded v0.7.1
+   Compiling is-terminal v0.4.16
+   Compiling termcolor v1.4.1
+   Compiling iana-time-zone v0.1.63
+   Compiling humantime v2.2.0
+   Compiling scoped-tls v1.0.1
+   Compiling env_logger v0.10.2
+   Compiling chrono v0.4.41
+   Compiling warp v0.3.7
+   Compiling bip39 v2.2.0
+   Compiling secp256k1 v0.27.0
+   Compiling sha2 v0.10.9
+   Compiling hex v0.4.3
+   Compiling blockchain-node v0.1.0 (/home/runner/workspace/blockchain-node)
+error[E0761]: file for module `network` found at both "blockchain-node/src/network.rs" and "blockchain-node/src/network/mod.rs"
+ --> blockchain-node/src/main.rs:9:1
+  |
+9 | mod network;
+  | ^^^^^^^^^^^^
+  |
+  = help: delete or rename one of them to remove the ambiguity
+
+error[E0761]: file for module `consensus` found at both "blockchain-node/src/consensus.rs" and "blockchain-node/src/consensus/mod.rs"
+  --> blockchain-node/src/main.rs:10:1
+   |
+10 | mod consensus;
+   | ^^^^^^^^^^^^^^
+   |
+   = help: delete or rename one of them to remove the ambiguity
+
+error[E0583]: file not found for module `transaction`
+  --> blockchain-node/src/main.rs:11:1
+   |
+11 | mod transaction;
+   | ^^^^^^^^^^^^^^^^
+   |
+   = help: to create the module `transaction`, create file "blockchain-node/src/transaction.rs" or "blockchain-node/src/transaction/mod.rs"
+   = note: if there is a `mod transaction` elsewhere in the crate already, import it with `use crate::...` instead
+
+error[E0583]: file not found for module `wallet`
+  --> blockchain-node/src/main.rs:12:1
+   |
+12 | mod wallet;
+   | ^^^^^^^^^^^
+   |
+   = help: to create the module `wallet`, create file "blockchain-node/src/wallet.rs" or "blockchain-node/src/wallet/mod.rs"
+   = note: if there is a `mod wallet` elsewhere in the crate already, import it with `use crate::...` instead
+
+error[E0432]: unresolved import `bip39::Seed`
+ --> blockchain-node/src/blockchain.rs:6:33
+  |
+6 | use bip39::{Mnemonic, Language, Seed};
+  |                                 ^^^^ no `Seed` in the root
+
+warning: unused import: `blockchain::Blockchain`
+  --> blockchain-node/src/main.rs:14:5
+   |
+14 | use blockchain::Blockchain;
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+error[E0599]: no function or associated item named `generate_in` found for struct `Mnemonic` in the current scope
+   --> blockchain-node/src/blockchain.rs:78:34
+    |
+78  | ...mnemonic = Mnemonic::generate_in(Language::English, 12).unwrap();
+    |                         ^^^^^^^^^^^ function or associated item not found in `Mnemonic`
+    |
+note: if you're trying to build a new `Mnemonic` consider using one of the following associated functions:
+      Mnemonic::from_entropy_in
+      Mnemonic::from_entropy
+      Mnemonic::parse_in_normalized
+      Mnemonic::parse_in_normalized_without_checksum_check
+      and 3 others
+   --> /home/runner/workspace/.local/share/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-2.2.0/src/lib.rs:207:2
+    |
+207 |       pub fn from_entropy_in(language: Language, entropy: &[u8]) -> Result<Mnemonic, Error...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+253 |       pub fn from_entropy(entropy: &[u8]) -> Result<Mnemonic, Error> {
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+437 |       pub fn parse_in_normalized(language: Language, s: &str) -> Result<Mnemonic, Error> {
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+489 | /     pub fn parse_in_normalized_without_checksum_check(
+490 | |         language: Language,
+491 | |         s: &str,
+492 | |     ) -> Result<Mnemonic, Error> {
+    | |________________________________^
+
+error[E0599]: no function or associated item named `generate_in` found for struct `Mnemonic` in the current scope
+   --> blockchain-node/src/blockchain.rs:104:34
+    |
+104 | ...mnemonic = Mnemonic::generate_in(Language::English, 12).unwrap();
+    |                         ^^^^^^^^^^^ function or associated item not found in `Mnemonic`
+    |
+note: if you're trying to build a new `Mnemonic` consider using one of the following associated functions:
+      Mnemonic::from_entropy_in
+      Mnemonic::from_entropy
+      Mnemonic::parse_in_normalized
+      Mnemonic::parse_in_normalized_without_checksum_check
+      and 3 others
+   --> /home/runner/workspace/.local/share/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bip39-2.2.0/src/lib.rs:207:2
+    |
+207 |       pub fn from_entropy_in(language: Language, entropy: &[u8]) -> Result<Mnemonic, Error...
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+253 |       pub fn from_entropy(entropy: &[u8]) -> Result<Mnemonic, Error> {
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+437 |       pub fn parse_in_normalized(language: Language, s: &str) -> Result<Mnemonic, Error> {
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+489 | /     pub fn parse_in_normalized_without_checksum_check(
+490 | |         language: Language,
+491 | |         s: &str,
+492 | |     ) -> Result<Mnemonic, Error> {
+    | |________________________________^
+
+error[E0599]: no function or associated item named `genesis` found for struct `Block` in the current scope
+  --> blockchain-node/src/main.rs:52:40
+   |
+52 |         chain: vec![blockchain::Block::genesis()],
+   |                                        ^^^^^^^ function or associated item not found in `Block`
+   |
+  ::: blockchain-node/src/blockchain.rs:11:1
+   |
+11 | pub struct Block {
+   | ---------------- function or associated item `genesis` not found for this struct
+
+Some errors have detailed explanations: E0432, E0583, E0599, E0761.
+For more information about an error, try `rustc --explain E0432`.
+warning: `blockchain-node` (bin "blockchain-node") generated 1 warning
+error: could not compile `blockchain-node` (bin "blockchain-node") due to 8 previous errors; 1 warning emitted
+~/workspace$ 

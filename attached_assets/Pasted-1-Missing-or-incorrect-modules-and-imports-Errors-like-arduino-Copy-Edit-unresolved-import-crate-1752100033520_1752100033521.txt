@@ -1,0 +1,136 @@
+1. Missing or incorrect modules and imports
+Errors like:
+
+arduino
+Copy
+Edit
+unresolved import `crate::blockchain::BlockHeader`
+could not find `mempool` in the crate root
+Means your code expects a BlockHeader struct or module and a mempool module, but they do not exist or are not declared properly.
+
+Fix:
+Check src/blockchain.rs: Does it define BlockHeader? If not, either define it or remove that import.
+
+Check if src/mempool.rs exists, and if you declared mod mempool; in src/lib.rs or main.rs. If mempool is missing, create the file or remove references.
+
+Similarly, fix any missing modules by creating the file or removing the import.
+
+2. Trait method signature mismatch
+go
+Copy
+Edit
+method `propose_block` has 4 parameters but the declaration in trait `ConsensusEngine::propose_block` has 2
+Your trait requires a function with 2 parameters:
+
+rust
+Copy
+Edit
+fn propose_block(&self, mempool: &Mempool) -> Block;
+But your implementation has 4 parameters. You need to fix your impl to match the trait signature exactly:
+
+rust
+Copy
+Edit
+fn propose_block(&self, mempool: &Mempool) -> Block {
+    // implementation here, no extra parameters
+}
+If you need extra data (like parent_hash or miner_address), pass them differently, maybe by embedding them in the struct or passing as part of mempool.
+
+3. Mnemonic::generate does not exist
+go
+Copy
+Edit
+no function or associated item named `generate` found for struct `Mnemonic`
+The bip39 crate v2.2.0 doesn't have Mnemonic::generate method.
+
+Fix:
+Use this pattern instead:
+
+rust
+Copy
+Edit
+use bip39::{Mnemonic, Language};
+use rand::RngCore;
+
+let mut entropy = [0u8; 16]; // for 12 words, 128 bits entropy
+rand::thread_rng().fill_bytes(&mut entropy);
+
+let mnemonic = Mnemonic::from_entropy(&entropy).unwrap();
+Or use the methods listed in the error like from_entropy_in.
+
+4. Block struct does not have header field
+You reference block.header but your Block struct doesn't have that field. It likely has fields like index, timestamp, previous_hash, etc.
+
+Fix:
+Either:
+
+Add a header field (a struct) to Block, or
+
+Change your code to access the existing fields directly, e.g.:
+
+rust
+Copy
+Edit
+block.nonce
+block.hash
+block.previous_hash
+5. Wrong usage of NetworkManager::new
+cpp
+Copy
+Edit
+NetworkManager::new() takes 0 arguments but 1 argument was supplied
+Either:
+
+Change your NetworkManager::new to accept a port parameter, or
+
+Call it without arguments like NetworkManager::new().
+
+6. NetworkManager missing method start()
+You call network_manager.start(), but that method is missing.
+
+Fix:
+Add a start method to NetworkManager struct, e.g.:
+
+rust
+Copy
+Edit
+impl NetworkManager {
+    pub async fn start(&self) {
+        // your async server logic here
+    }
+}
+7. Trait instantiation error
+css
+Copy
+Edit
+expected a type, found a trait
+You cannot instantiate a trait directly:
+
+rust
+Copy
+Edit
+let consensus_engine = ConsensusEngine::new(); // ERROR
+Fix:
+You need to instantiate a struct that implements ConsensusEngine trait, e.g.:
+
+rust
+Copy
+Edit
+let consensus_engine = ProofOfWorkEngine::new();
+where ProofOfWorkEngine implements ConsensusEngine.
+
+Summary of what you should do next:
+Fix module imports & declarations; add missing files or remove references.
+
+Fix trait method signatures to match exactly.
+
+Change usage of bip39 Mnemonic to use from_entropy style API.
+
+Adjust your Block struct usage to match actual fields.
+
+Fix NetworkManager::new call and add missing start() method.
+
+Instantiate a concrete struct implementing ConsensusEngine, not the trait itself.
+
+Clean, build again after fixing.
+

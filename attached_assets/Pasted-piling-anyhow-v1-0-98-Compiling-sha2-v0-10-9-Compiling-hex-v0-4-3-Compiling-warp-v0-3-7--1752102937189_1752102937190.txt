@@ -1,0 +1,65 @@
+piling anyhow v1.0.98
+   Compiling sha2 v0.10.9
+   Compiling hex v0.4.3
+   Compiling warp v0.3.7
+   Compiling blockchain-node v0.1.0 (/home/runner/workspace/blockchain-node)
+error: unexpected closing delimiter: }
+  --> blockchain-node/src/consensus/pos.rs:84:1
+   |
+57 |     fn calculate_merkle_root(transactions: &[crate::blockchain::Transaction]) -> String {
+   |                                                                                         - this delimiter might not be properly closed...
+...
+72 |         };
+   |         - ...as it matches this but it has different indentation
+...
+84 | }
+   | ^ unexpected closing delimiter
+
+error: could not compile blockchain-node (bin "blockchain-node") due to 1 previous error
+~/workspace$ 
+
+
+ChatGPT said:
+That error means you have a mismatched bracket (}) — likely an extra closing brace or incorrectly placed one — in src/consensus/pos.rs near or after line 84.
+
+✅ Here's how to fix it:
+You likely added the calculate_merkle_root() function like this:
+
+rust
+Copy
+Edit
+fn calculate_merkle_root(transactions: &[crate::blockchain::Transaction]) -> String {
+    if transactions.is_empty() {
+        return String::from("0");
+    }
+
+    let mut hashes: Vec<String> = transactions.iter().map(|tx| {
+        let serialized = serde_json::to_string(tx).unwrap();
+        hex::encode(sha2::Sha256::digest(serialized.as_bytes()))
+    }).collect();
+
+    while hashes.len() > 1 {
+        let mut new_hashes = vec![];
+        for i in (0..hashes.len()).step_by(2) {
+            let left = &hashes[i];
+            let right = if i + 1 < hashes.len() { &hashes[i + 1] } else { left };
+            let combined = format!("{}{}", left, right);
+            let hash = hex::encode(sha2::Sha256::digest(combined.as_bytes()));
+            new_hashes.push(hash);
+        }
+        hashes = new_hashes;
+    }
+
+    hashes[0].clone()
+} // ✅ Correct closing brace here only
+🔍 What to check:
+Make sure every opening { has only one matching closing }.
+
+Don't accidentally close the whole module or trait inside the function.
+
+✅ Next step:
+Open blockchain-node/src/consensus/pos.rs and:
+
+Go to line 57 to 84.
+
+Use the fixed version of calculate_merkle_root() above.

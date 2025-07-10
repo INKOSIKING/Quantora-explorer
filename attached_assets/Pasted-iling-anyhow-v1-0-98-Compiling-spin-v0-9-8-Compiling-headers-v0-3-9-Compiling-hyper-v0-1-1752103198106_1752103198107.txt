@@ -1,0 +1,313 @@
+iling anyhow v1.0.98
+   Compiling spin v0.9.8
+   Compiling headers v0.3.9
+   Compiling hyper v0.14.32
+   Compiling bitcoin_hashes v0.13.0
+   Compiling pin-project v1.1.10
+   Compiling regex v1.11.1
+   Compiling unicode-normalization v0.1.24
+   Compiling tokio-tungstenite v0.21.0
+   Compiling serde_urlencoded v0.7.1
+   Compiling is-terminal v0.4.16
+   Compiling either v1.15.0
+   Compiling scoped-tls v1.0.1
+   Compiling termcolor v1.4.1
+   Compiling humantime v2.2.0
+   Compiling iana-time-zone v0.1.63
+   Compiling env_logger v0.10.2
+   Compiling chrono v0.4.41
+   Compiling rayon v1.10.0
+   Compiling bip39 v2.2.0
+   Compiling warp v0.3.7
+   Compiling secp256k1 v0.27.0
+   Compiling sha2 v0.10.9
+   Compiling hex v0.4.3
+   Compiling blockchain-node v0.1.0 (/home/runner/workspace/blockchain-node)
+error[E0407]: method calculate_merkle_root is not a member of trait ConsensusEngine
+  --> blockchain-node/src/consensus/pos.rs:57:5
+   |
+57 | /     fn calculate_merkle_root(transactions: &[crate::blockchain::...
+58 | |         if transactions.is_empty() {
+59 | |             return String::from("0");
+...  |
+79 | |         hashes[0].clone()
+80 | |     }
+   | |_____^ not a member of trait ConsensusEngine
+
+warning: unused import: chrono::Utc
+ --> blockchain-node/src/consensus/pos.rs:5:5
+  |
+5 | use chrono::Utc;
+  |     ^^^^^^^^^^^
+  |
+  = note: #[warn(unused_imports)] on by default
+
+warning: unused import: BlockHeader
+ --> blockchain-node/src/consensus/mod.rs:4:32
+  |
+4 | use crate::blockchain::{Block, BlockHeader};
+  |                                ^^^^^^^^^^^
+
+warning: unused import: Blockchain
+  --> blockchain-node/src/main.rs:14:18
+   |
+14 | use blockchain::{Blockchain, Transaction};
+   |                  ^^^^^^^^^^
+
+warning: unused import: mempool::Mempool
+  --> blockchain-node/src/main.rs:18:5
+   |
+18 | use mempool::Mempool;
+   |     ^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named as_bytes found for array [u8; 64] in the current scope
+    --> blockchain-node/src/blockchain.rs:122:54
+     |
+122  | ...   let secret_key = SecretKey::from_slice(&seed.as_bytes()[0....
+     |                                                    ^^^^^^^^
+     |
+    ::: /home/runner/workspace/.local/share/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zerocopy-0.8.26/src/lib.rs:5021:8
+     |
+5021 |     fn as_bytes(&self) -> &[u8]
+     |        -------- the method is available for [u8; 64] here
+     |
+     = help: items from traits can only be used if the trait is in scope
+help: trait IntoBytes which provides as_bytes is implemented but not in scope; perhaps you want to import it
+     |
+1    + use zerocopy::IntoBytes;
+     |
+help: there is a method bytes with a similar name
+     |
+122  |         let secret_key = SecretKey::from_slice(&seed.bytes()[0..32]).unwrap();
+     |                                                      ~~~~~
+
+error[E0599]: no method named as_bytes found for array [u8; 64] in the current scope
+    --> blockchain-node/src/blockchain.rs:150:54
+     |
+150  | ...   let secret_key = SecretKey::from_slice(&seed.as_bytes()[0....
+     |                                                    ^^^^^^^^
+     |
+    ::: /home/runner/workspace/.local/share/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/zerocopy-0.8.26/src/lib.rs:5021:8
+     |
+5021 |     fn as_bytes(&self) -> &[u8]
+     |        -------- the method is available for [u8; 64] here
+     |
+     = help: items from traits can only be used if the trait is in scope
+help: trait IntoBytes which provides as_bytes is implemented but not in scope; perhaps you want to import it
+     |
+1    + use zerocopy::IntoBytes;
+     |
+help: there is a method bytes with a similar name
+     |
+150  |         let secret_key = SecretKey::from_slice(&seed.bytes()[0..32]).unwrap();
+     |                                                      ~~~~~
+
+error[E0599]: no function or associated item named calculate_merkle_root found for struct PoSEngine in the current scope
+  --> blockchain-node/src/consensus/pos.rs:39:32
+   |
+8  | pub struct PoSEngine {
+   | -------------------- function or associated item calculate_merkle_root not found for this struct
+...
+39 |             merkle_root: Self::calculate_merkle_root(&transactions),
+   |                                ^^^^^^^^^^^^^^^^^^^^^ function or associated item not found in PoSEngine
+
+error[E0599]: no function or associated item named digest found for struct CoreWrapper in the current scope
+  --> blockchain-node/src/consensus/pos.rs:64:39
+   |
+64 |             hex::encode(sha2::Sha256::digest(serialized.as_bytes()))
+   |                                       ^^^^^^ function or associated item not found in CoreWrapper<CtVariableCoreWrapper<..., ..., ...>>
+   |
+   = note: the full type name has been written to '/home/runner/workspace/target/debug/deps/blockchain_node-e8d92f672fdadf0a.long-type-10358575829582575178.txt'
+   = note: consider using --verbose to print the full type name to the console
+note: if you're trying to build a new CoreWrapper<CtVariableCoreWrapper<Sha256VarCore, UInt<UInt<UInt<UInt<UInt<UInt<UTerm, B1>, B0>, B0>, B0>, B0>, B0>, OidSha256>>, consider using CoreWrapper::<T>::from_core which returns CoreWrapper<_>
+  --> /home/runner/workspace/.local/share/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/digest-0.10.7/src/core_api/wrapper.rs:70:5
+   |
+70 |     pub fn from_core(core: T) -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = help: items from traits can only be used if the trait is in scope
+help: trait Digest which provides digest is implemented but not in scope; perhaps you want to import it
+   |
+1  + use sha2::Digest;
+   |
+
+error[E0599]: no function or associated item named digest found for struct CoreWrapper in the current scope
+  --> blockchain-node/src/consensus/pos.rs:73:54
+   |
+73 | ...::encode(sha2::Sha256::digest(combined.as_bytes()));
+   |                           ^^^^^^ function or associated item not found in CoreWrapper<CtVariableCoreWrapper<..., ..., ...>>
+   |
+   = note: the full type name has been written to '/home/runner/workspace/target/debug/deps/blockchain_node-e8d92f672fdadf0a.long-type-10358575829582575178.txt'
+   = note: consider using --verbose to print the full type name to the console
+note: if you're trying to build a new CoreWrapper<CtVariableCoreWrapper<Sha256VarCore, UInt<UInt<UInt<UInt<UInt<UInt<UTerm, B1>, B0>, B0>, B0>, B0>, B0>, OidSha256>>, consider using CoreWrapper::<T>::from_core which returns CoreWrapper<_>
+  --> /home/runner/workspace/.local/share/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/digest-0.10.7/src/core_api/wrapper.rs:70:5
+   |
+70 |     pub fn from_core(core: T) -> Self {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = help: items from traits can only be used if the trait is in scope
+help: trait Digest which provides digest is implemented but not in scope; perhaps you want to import it
+   |
+1  + use sha2::Digest;
+   |
+
+error[E0609]: no field rollup_batch_size on type &HybridConsensusEngine
+   --> blockchain-node/src/consensus/hybrid.rs:180:18
+    |
+180 |             self.rollup_batch_size
+    |                  ^^^^^^^^^^^^^^^^^ unknown field
+    |
+help: a field with a similar name exists
+    |
+180 |             self.rollup_batches
+    |                  ~~~~~~~~~~~~~~
+
+error[E0599]: no method named hash found for struct blockchain::Transaction in the current scope
+  --> blockchain-node/src/mempool/mod.rs:20:26
+   |
+20 |         let tx_hash = tx.hash();
+   |                          ^^^^ method not found in Transaction
+   |
+  ::: blockchain-node/src/blockchain.rs:34:1
+   |
+34 | pub struct Transaction {
+   | ---------------------- method hash not found for this struct
+   |
+   = help: items from traits can only be used if the trait is implemented and in scope
+   = note: the following traits define an item hash, perhaps you need to implement one of them:
+           candidate #1: Hash
+           candidate #2: bitcoin_hashes::Hash
+
+Some errors have detailed explanations: E0407, E0599, E0609.
+For more information about an error, try rustc --explain E0407.
+warning: blockchain-node (bin "blockchain-node") generated 4 warnings
+error: could not compile blockchain-node (bin "blockchain-node") due to 8 previous errors; 4 warnings emitted
+~/workspace$ 
+
+
+ChatGPT said:
+You're almost there — your code is compiling a ton of crates successfully, but you're hitting a few critical errors. Here's a breakdown and fix guide:
+
+🔧 MAIN ERRORS AND FIXES
+❌ 1. calculate_merkle_root not found in ConsensusEngine
+rust
+Copy
+Edit
+error[E0407]: method `calculate_merkle_root` is not a member of trait `ConsensusEngine`
+Fix: You either:
+
+Put calculate_merkle_root in impl PoSEngine when it should be a private method outside the trait.
+
+OR you’re calling it from a trait where it’s not defined.
+
+Solution:
+Make it a private helper function, not part of the ConsensusEngine trait. Move it outside any impl or trait block.
+
+rust
+Copy
+Edit
+// Place this outside any impl or trait block
+fn calculate_merkle_root(transactions: &[crate::blockchain::Transaction]) -> String {
+    // Same body as before...
+}
+And call it like:
+
+rust
+Copy
+Edit
+let root = calculate_merkle_root(&transactions);
+❌ 2. sha2::Sha256::digest not found
+rust
+Copy
+Edit
+error[E0599]: no function or associated item named `digest` found for struct `Sha256`
+Fix: You need to import the Digest trait:
+
+rust
+Copy
+Edit
+use sha2::Digest;
+Place that at the top of any file where you're doing Sha256::digest(...).
+
+❌ 3. as_bytes on [u8; 64] not found
+rust
+Copy
+Edit
+error[E0599]: no method named `as_bytes` found for array `[u8; 64]`
+You're calling seed.as_bytes() on a [u8; 64] array. Arrays don’t have .as_bytes() unless you import or define it.
+
+Fix:
+Use this instead:
+
+rust
+Copy
+Edit
+let secret_key = SecretKey::from_slice(&seed[0..32]).unwrap();
+Or, if you want .as_bytes(), add:
+
+rust
+Copy
+Edit
+use zerocopy::IntoBytes;
+But slicing [0..32] is easier and clearer.
+
+❌ 4. PoSEngine::calculate_merkle_root not found
+rust
+Copy
+Edit
+error[E0599]: no function or associated item named `calculate_merkle_root` found for struct `PoSEngine`
+Fix: Same as error #1 — make calculate_merkle_root a free function, not tied to PoSEngine.
+
+❌ 5. self.rollup_batch_size field not found
+rust
+Copy
+Edit
+error[E0609]: no field `rollup_batch_size` on type `&HybridConsensusEngine`
+Fix: Either:
+
+Rename it to rollup_batches, which exists.
+
+Or define rollup_batch_size in the struct HybridConsensusEngine.
+
+❌ 6. Transaction.hash() method not found
+rust
+Copy
+Edit
+error[E0599]: no method named `hash` found for struct `Transaction`
+Fix: Implement a hash method on your Transaction struct:
+
+rust
+Copy
+Edit
+impl Transaction {
+    pub fn hash(&self) -> String {
+        let serialized = serde_json::to_string(self).unwrap();
+        hex::encode(sha2::Sha256::digest(serialized.as_bytes()))
+    }
+}
+Also import:
+
+rust
+Copy
+Edit
+use sha2::{Sha256, Digest};
+use serde_json;
+✅ QUICK SUMMARY OF WHAT TO ADD/CHANGE
+✅ Add this import in files using Sha256::digest() or Transaction::hash():
+
+rust
+Copy
+Edit
+use sha2::Digest;
+✅ Replace seed.as_bytes() with:
+
+rust
+Copy
+Edit
+&seed[0..32]
+✅ Move calculate_merkle_root() outside trait/impl, like:
+
+rust
+Copy
+Edit
+fn calculate_merkle_root(transactions: &[Transaction]) -> String { ... }
+✅ Implement fn hash() on Transaction.
+
